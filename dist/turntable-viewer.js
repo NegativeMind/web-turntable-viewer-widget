@@ -118,25 +118,33 @@ if (typeof TurntableViewer === 'undefined') {
             // 3. デフォルト値
 
             const htmlWidth = parseInt(this.iframe.getAttribute('width')) || 0;
-            const computedWidth = this.container.clientWidth || this.iframe.clientWidth || 0;
+            // レスポンシブ対応: 親要素とiframe自体のサイズを比較
+            const containerWidth = this.container.clientWidth || 0;
+            const iframeWidth = this.iframe.clientWidth || 0;
+            const computedWidth = Math.max(containerWidth, iframeWidth) || 0;
 
-            const containerWidth = htmlWidth || computedWidth || 320;
+            const finalWidth = htmlWidth || computedWidth || 320;
 
-            console.log(`Container width for calculation: ${containerWidth}px`);
+            console.log(`Container width for calculation: ${finalWidth}px (html: ${htmlWidth}, container: ${containerWidth}, iframe: ${iframeWidth})`);
 
             // 基準サイズでの基準値から比例計算
-            // 320px画面で600px、640px画面で1200px、1280px画面で2400pxの感度
+            // モバイル向けに感度を調整
             const basePixels = 1200;
             const baseScreenSize = 640;
 
-            // 線形スケーリング + 最小値・最大値制限
-            let pixelsPerRotation = (containerWidth / baseScreenSize) * basePixels;
+            // 線形スケーリング + モバイル用調整
+            let pixelsPerRotation = (finalWidth / baseScreenSize) * basePixels;
 
-            // 最小値: 300px（非常に小さい画面でも操作しやすく）
-            // 最大値: 3000px（非常に大きい画面でも細かい制御が可能）
-            pixelsPerRotation = Math.max(300, Math.min(3000, pixelsPerRotation));
+            // スマホ画面では感度を少し上げる（操作しやすくする）
+            if (finalWidth <= 480) {
+                pixelsPerRotation *= 1.2;
+            }
 
-            console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(pixelsPerRotation)} for width: ${containerWidth}px`);
+            // 最小値: 250px（スマホでも操作しやすく）
+            // 最大値: 3000px（大画面でも細かい制御が可能）
+            pixelsPerRotation = Math.max(250, Math.min(3000, pixelsPerRotation));
+
+            console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(pixelsPerRotation)} for width: ${finalWidth}px`);
             return Math.round(pixelsPerRotation);
         }
 
@@ -258,12 +266,33 @@ if (typeof TurntableViewer === 'undefined') {
             const htmlHeight = parseInt(this.iframe.getAttribute('height')) || 0;
 
             // 優先順位: video-width > width属性 > デフォルト
-            const finalWidth = videoWidth || htmlWidth || 480;
-            const finalHeight = videoHeight || htmlHeight || finalWidth; // 360度動画は正方形（1:1）が一般的
+            let finalWidth = videoWidth || htmlWidth || 480;
+            let finalHeight = videoHeight || htmlHeight || finalWidth; // 360度動画は正方形（1:1）が一般的
 
-            // iframe要素にサイズを設定
+            // スマホ対応: 画面幅が狭い場合は調整
+            const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+            if (screenWidth <= 768) {
+                // スマホ・タブレットでは画面幅の90%を使用（余白を考慮）
+                const containerWidth = this.container.clientWidth || this.container.parentElement?.clientWidth || screenWidth;
+                const availableWidth = Math.floor(containerWidth * 0.9); // 90%使用
+                if (availableWidth > 200) { // 最小サイズ確保
+                    finalWidth = availableWidth;
+                    finalHeight = availableWidth; // 正方形を維持
+                }
+            }
+
+            // iframe要素にサイズを設定（属性とスタイルの両方）
             this.iframe.setAttribute('width', finalWidth.toString());
             this.iframe.setAttribute('height', finalHeight.toString());
+
+            // スマホではCSSスタイルも直接設定
+            if (screenWidth <= 768) {
+                this.iframe.style.width = finalWidth + 'px';
+                this.iframe.style.height = finalHeight + 'px';
+                this.iframe.style.maxWidth = 'none';
+                this.iframe.style.display = 'block';
+                console.log(`Applied direct CSS styles: ${finalWidth}x${finalHeight}`);
+            }
 
             const params = new URLSearchParams({
                 background: '1',
@@ -283,7 +312,7 @@ if (typeof TurntableViewer === 'undefined') {
             });
 
             const url = `https://player.vimeo.com/video/${this.config.videoId}?${params.toString()}`;
-            console.log(`Video URL set: ${url} (Size: ${finalWidth}x${finalHeight})`);
+            console.log(`Video URL set: ${url} (Size: ${finalWidth}x${finalHeight}, Screen: ${screenWidth})`);
             return url;
         }
 
