@@ -78,5 +78,4 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ## ライセンス
 
-MIT License
-
+[MIT License](./LICENSE)
