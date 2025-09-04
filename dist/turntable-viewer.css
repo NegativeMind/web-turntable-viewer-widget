@@ -25,6 +25,9 @@
     /* 境界を明確にするため */
     border: 1px solid transparent;
     box-sizing: border-box;
+    /* タッチアクションは通常時は許可（JavaScriptで動的制御） */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
 }
 
 /* JavaScriptで初期化完了後にコンテナを表示 */
@@ -64,6 +67,10 @@
     height: 100%;
     cursor: grab;
     user-select: none;
+    /* タッチアクションは通常時は許可（JavaScriptで動的制御） */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
 }
 
 /* 角度表示（必須：UI要素の配置に必要） */
@@ -256,6 +263,15 @@
     color: #0066cc;
     background: rgba(0, 102, 204, 0.1);
     text-decoration: none;
+}
+
+/* ドラッグ中の状態管理 */
+.drag-overlay.dragging {
+    touch-action: none !important;
+}
+
+[vimeo-video-id].dragging {
+    touch-action: none !important;
 }
 
 /* スマホ対応 - より広い範囲をカバー */

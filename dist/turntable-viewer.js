@@ -960,6 +960,10 @@ if (typeof TurntableViewer === 'undefined') {
                 // ここで正式にドラッグ状態を開始
                 this.state.isDragging = true;
 
+                // ドラッグ中のスクロール防止クラスを追加
+                this.dragOverlay.classList.add('dragging');
+                this.container.classList.add('dragging');
+
                 // ドラッグ開始位置を再度設定（念のため）
                 this.state.dragStartX = startX;
 
@@ -968,6 +972,10 @@ if (typeof TurntableViewer === 'undefined') {
             } catch (error) {
                 console.error('Failed to get current time:', error);
                 this.state.isDragging = false; // エラー時は確実にfalseに
+                // エラー時もクラスを削除
+                this.dragOverlay.classList.remove('dragging');
+                this.container.classList.remove('dragging');
+                this.dragOverlay.style.cursor = 'grab';
                 return false;
             }
         }
@@ -979,6 +987,10 @@ if (typeof TurntableViewer === 'undefined') {
             if (!this.state.isDragging) return;
 
             this.state.isDragging = false;
+
+            // ドラッグ終了時にスクロール防止クラスを削除
+            this.dragOverlay.classList.remove('dragging');
+            this.container.classList.remove('dragging');
 
             // ペンディング中のAPI呼び出しをキャンセル
             if (this.state.pendingApiCall) {
@@ -995,7 +1007,7 @@ if (typeof TurntableViewer === 'undefined') {
          */
         attachEventListeners() {
             this.dragOverlay.addEventListener('mousedown', this.onMouseDown);
-            this.dragOverlay.addEventListener('touchstart', this.onTouchStart);
+            this.dragOverlay.addEventListener('touchstart', this.onTouchStart, { passive: false });
             window.addEventListener('resize', this.onWindowResize);
         }
 
@@ -1038,26 +1050,36 @@ if (typeof TurntableViewer === 'undefined') {
             // 既にドラッグ中の場合は無視
             if (this.state.isDragging) return;
 
+            // スクロールを防止するためにpreventDefaultを最初に実行
+            e.preventDefault();
+            e.stopPropagation();
+
             const success = await this.handleDragStart(e.touches[0].clientX);
             if (!success) return;
 
             // ドラッグ開始が完了してからイベントリスナーを追加
-            document.addEventListener('touchmove', this.onTouchMove);
+            document.addEventListener('touchmove', this.onTouchMove, { passive: false });
             document.addEventListener('touchend', this.onTouchEnd);
-            e.preventDefault();
         }
 
         /**
          * タッチムーブイベントハンドラー
          */
         onTouchMove(e) {
+            // スクロールを完全に防止
+            e.preventDefault();
+            e.stopPropagation();
+
             this.handleDragMove(e.touches[0].clientX);
         }
 
         /**
          * タッチエンドイベントハンドラー
          */
-        onTouchEnd() {
+        onTouchEnd(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
             this.handleDragEnd();
             document.removeEventListener('touchmove', this.onTouchMove);
             document.removeEventListener('touchend', this.onTouchEnd);
