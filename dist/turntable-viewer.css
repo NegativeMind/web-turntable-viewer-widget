@@ -1,0 +1,258 @@
+/* ターンテーブルラッパー */
+.turntable-wrapper {
+    display: inline-block;
+    /* 子要素（動画とリンク）のサイズに合わせる */
+    width: auto;
+    /* 縦方向の配置 */
+    vertical-align: top;
+}
+
+/* ビデオコンテナ */
+[vimeo-video-id] {
+    position: relative;
+    display: block;
+    /* HTMLのwidth属性で指定されたサイズを尊重 */
+    width: auto;
+    /* JavaScript実行前は完全に隠す */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    /* 初期表示での一瞬の小さい表示を防ぐ */
+    min-height: 300px;
+    /* 子要素が外にはみ出さないよう制御 */
+    overflow: hidden;
+    /* 境界を明確にするため */
+    border: 1px solid transparent;
+    box-sizing: border-box;
+}
+
+/* JavaScriptで初期化完了後にコンテナを表示 */
+[vimeo-video-id].initialized {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Vimeo iframe */
+[vimeo-video-id] iframe {
+    background: transparent;
+    /* HTMLの属性で指定されたサイズを尊重 */
+    display: block;
+    /* 初期状態では完全に隠す（サイズが確定するまで） */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    /* ボックスサイズの計算方法を明確化 */
+    box-sizing: border-box;
+    /* HTMLのwidth属性を優先し、制限を除去 */
+    /* HTMLのwidth/height属性から自動的にアスペクト比を計算 */
+    /* aspect-ratioは指定せず、HTMLの属性値を優先 */
+}
+
+/* サイズ確定後にiframeを表示 */
+[vimeo-video-id] iframe.size-ready {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ドラッグオーバーレイ（必須：ドラッグ操作に必要） */
+.drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    user-select: none;
+}
+
+/* 角度表示（必須：UI要素の配置に必要） */
+#angle-display {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+    /* ローディングオーバーレイ(z-index: 10)よりも下に配置 */
+    /* 初期状態では非表示（ローディング完了後に表示） */
+    display: none;
+    /* flexboxで数値と°記号を整列 */
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+    min-width: 60px;
+    font-feature-settings: "tnum" 1;
+    /* 数値を等幅で表示 */
+}
+
+/* 数値部分の固定幅 */
+#rotation-angle {
+    display: inline-block;
+    width: 30px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+}
+
+/* 度記号の固定位置 */
+.degree-symbol {
+    display: inline-block;
+    width: 10px;
+    text-align: left;
+}
+
+/* 角度数値部分の固定幅設定 */
+#angle {
+    display: inline-block;
+    width: 2.2em;
+    /* フォントサイズに合わせて調整 */
+    text-align: right;
+    /* 右詰めで統一感を出す */
+    font-variant-numeric: tabular-nums;
+    /* 数字を等幅に */
+}
+
+/* ローディングオーバーレイ */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* 初期状態でも適切なサイズを確保 */
+    min-height: 300px;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(3px);
+    transition: opacity 0.3s ease;
+    /* iframe要素のサイズに厳密に合わせる */
+    box-sizing: border-box;
+    border-radius: inherit;
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    min-width: 250px;
+}
+
+.loading-text {
+    font-size: 16px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #81C784);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-text {
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 35px;
+}
+
+/* Vimeoビューアラッパー */
+.vimeo-viewer-wrapper {
+    display: inline-block;
+    width: auto;
+}
+
+/* Vimeoリンク（フッター位置） */
+.vimeo-link {
+    display: block;
+    margin-top: 8px;
+    text-align: center;
+    color: #666;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.05);
+    transition: color 0.3s ease, background-color 0.3s ease;
+    box-sizing: border-box;
+    /* 動画コンテナの実際の幅に合わせる */
+    width: auto;
+    /* 初期状態では非表示（ローディング完了後に表示） */
+    opacity: 0;
+    pointer-events: none;
+}
+
+.vimeo-link.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.vimeo-link:hover {
+    color: #0066cc;
+    background: rgba(0, 102, 204, 0.1);
+    text-decoration: none;
+}
