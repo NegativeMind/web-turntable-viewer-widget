@@ -40,6 +40,19 @@
 
         .turntable-wrapper {
             display: inline-block;
+            max-width: 100%;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 600px) {
+            .turntable-wrapper {
+                width: 100%;
+            }
+
+            .turntable-wrapper iframe {
+                width: 100% !important;
+                max-width: 480px;
+            }
         }
     </style>
 </head>
