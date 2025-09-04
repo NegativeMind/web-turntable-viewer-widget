@@ -54,7 +54,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 | 属性 | 必須 | 値 | 説明 |
 |------|------|-----|------|
 | `vimeo-video-id` | ✅ | 数値 | Vimeoの動画ID |
-| `clockwise-rotation` | ❌ | ブール値 | ターンテーブルの回転方向<br>時計回り（デフォルト）：`clockwise-rotation` または `clockwise-rotation="true"` または `clockwise-rotation="1"`:<br>反時計回り：`clockwise-rotation="false"` または `clockwise-rotation="0"` |
+| `clockwise-rotation` | ❌ | ブール値 | ターンテーブルの回転方向<br><br>時計回り(デフォルト)：`clockwise-rotation` または `clockwise-rotation="true"` または `clockwise-rotation="1"`:<br>反時計回り：`clockwise-rotation="false"` または `clockwise-rotation="0"` |
 
 #### 埋め込みサイズ設定
 
