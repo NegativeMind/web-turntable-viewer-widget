@@ -36,6 +36,7 @@
             margin: 10px 0;
             background: #f8f9fa;
             text-align: center;
+            overflow: hidden;
         }
 
         .turntable-wrapper {
@@ -45,13 +46,27 @@
 
         /* スマホ対応 */
         @media (max-width: 600px) {
+            body {
+                padding: 5px;
+            }
+
+            .demo-area {
+                padding: 5px;
+            }
+
+            .embed-section {
+                padding: 5px;
+                margin: 5px 0;
+            }
+
             .turntable-wrapper {
                 width: 100%;
+                display: block;
             }
 
             .turntable-wrapper iframe {
                 width: 100% !important;
-                max-width: 480px;
+                max-width: none;
             }
         }
     </style>
