@@ -5,6 +5,12 @@
 模型や3DCGモデルを360度回転させたターンテーブル動画をWebブラウザ上でドラッグ操作して自由な角度から鑑賞できるウィジェットスクリプトです。
 Vimeoの動画埋め込みをラップするもので、動画のアップロード・公開にはVimeoを利用します。
 
+<h1 align="center">
+<a href="assets/demo.gif" target="_blank">
+  <img src="assets/demo.gif" alt="Web Turntable Viewer Widget Demo" width="760">
+</a>
+</h1>
+
 ## 利用上の注意
 
 このウィジェットはVimeoの公式埋め込み機能およびAPIを利用しています。ご利用の際は、必ずVimeoの[利用規約](https://vimeo.com/legal/terms/ja)を遵守してください。
