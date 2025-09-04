@@ -6,10 +6,12 @@
 Vimeoの動画埋め込みをラップするもので、動画のアップロード・公開にはVimeoを利用します。
 
 <h1 align="center">
-<a href="assets/demo.gif" target="_blank">
+<a href="https://negativemind.com/web-turntable-viewer-widget/" target="_blank">
   <img src="assets/demo.gif" alt="Web Turntable Viewer Widget Demo" width="760">
 </a>
 </h1>
+
+デモページは[こちら](https://negativemind.com/web-turntable-viewer-widget/)
 
 ## 使い方
 
