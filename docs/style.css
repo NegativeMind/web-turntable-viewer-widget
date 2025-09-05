@@ -226,7 +226,6 @@ body {
     background: #f8f9fa;
     border-radius: 8px;
     text-align: center;
-    min-height: 250px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -442,12 +441,7 @@ body {
 
     /* プレビューエリアのモバイル対応 */
     .preview-area {
-        min-height: 200px;
         padding: 12px;
-    }
-
-    .preview-area .turntable-wrapper {
-        max-width: 100%;
     }
 
     /* モバイルでのコード表示調整 */
