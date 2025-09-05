@@ -25,8 +25,8 @@
     /* 境界を明確にするため */
     border: 1px solid transparent;
     box-sizing: border-box;
-    /* タッチアクションは通常時は許可（JavaScriptで動的制御） */
-    touch-action: manipulation;
+    /* タッチアクション制御（警告対策） */
+    touch-action: none;
     -webkit-touch-callout: none;
 }
 
@@ -67,8 +67,8 @@
     height: 100%;
     cursor: grab;
     user-select: none;
-    /* タッチアクションは通常時は許可（JavaScriptで動的制御） */
-    touch-action: manipulation;
+    /* タッチアクション制御（警告対策） */
+    touch-action: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
 }

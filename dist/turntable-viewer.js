@@ -1059,7 +1059,7 @@ if (typeof TurntableViewer === 'undefined') {
 
             // ドラッグ開始が完了してからイベントリスナーを追加
             document.addEventListener('touchmove', this.onTouchMove, { passive: false });
-            document.addEventListener('touchend', this.onTouchEnd);
+            document.addEventListener('touchend', this.onTouchEnd, { passive: false });
         }
 
         /**
