@@ -41,7 +41,7 @@ body {
 
 .github-link {
     position: absolute;
-    top: 18px;
+    top: 10px;
     right: 20px;
     display: inline-flex;
     align-items: center;
@@ -68,6 +68,8 @@ body {
 
 .github-link svg {
     flex-shrink: 0;
+    width: 18px;
+    height: 18px;
 }
 
 .generator {
