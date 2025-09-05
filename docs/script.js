@@ -79,7 +79,7 @@ class EmbedGenerator {
 
         const embedCode = [
             '<script src="https://player.vimeo.com/api/player.js"><' + '/script>',
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.2-beta/dist/turntable-viewer.css">',
+            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.3-beta/dist/turntable-viewer.css">',
             '<div class="turntable-wrapper">',
             '  <div vimeo-video-id="' + videoId + '" ' + clockwiseAttr + '>',
             '    <iframe width="' + width + '" height="' + Math.round(width * 9 / 16) + '" frameborder="0" allowfullscreen></iframe>',
@@ -98,7 +98,7 @@ class EmbedGenerator {
             '  </div>',
             '  <a class="vimeo-link" href="https://vimeo.com/' + videoId + '" target="_blank">View on Vimeo</a>',
             '</div>',
-            '<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.2-beta/dist/turntable-viewer.js"><' + '/script>'
+            '<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.3-beta/dist/turntable-viewer.js"><' + '/script>'
         ];
 
         return embedCode.join('\n').trim();
