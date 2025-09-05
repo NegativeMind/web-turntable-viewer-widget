@@ -346,42 +346,86 @@ body {
 }
 
 .code-display {
-    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
-    color: #e6e6e6;
-    border: 1px solid #404040;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Consolas', monospace;
-    font-size: 11px;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
+    background: #0d1117;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+    padding: 0;
+    border-radius: 8px;
     position: relative;
-    line-height: 1.3;
     box-sizing: border-box;
-    max-height: 100px;
+    max-height: 120px;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(10px);
+    font-size: 12px;
+}
+
+.code-display pre {
+    margin: 0;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    line-height: 1.45;
+    word-wrap: normal;
+    white-space: pre;
+}
+
+.code-display code {
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    display: block;
+}
+
+.code-display #codeContent {
+    margin: 0;
+    padding: 0;
+    display: block;
+    color: #f0f6fc;
+}
+
+/* GitHubライトテーマのシンタックスハイライト */
+.code-display .highlight-tag {
+    color: #116329;
+    font-weight: normal;
+}
+
+.code-display .highlight-attr {
+    color: #0550ae;
+}
+
+.code-display .highlight-value {
+    color: #0a3069;
+}
+
+.code-display .highlight-punctuation {
+    color: #24292f;
 }
 
 .code-display::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 12px;
+    height: 12px;
 }
 
 .code-display::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    background: #0d1117;
+    border-radius: 8px;
 }
 
 .code-display::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
+    background: #484f58;
+    border-radius: 8px;
+    border: 2px solid #0d1117;
 }
 
 .code-display::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: #6e7681;
 }
 
 #codeContent {
@@ -398,27 +442,28 @@ body {
 }
 
 .copy-btn {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    color: #e6e6e6;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
+    position: sticky;
+    top: 8px;
+    right: 8px;
+    float: right;
+    margin-bottom: -40px;
+    background: #21262d;
+    color: #f0f6fc;
+    border: 1px solid #30363d;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: inherit;
-    backdrop-filter: blur(10px);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .copy-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: #30363d;
+    border-color: #6e7681;
 }
 
 .copy-success {
@@ -540,9 +585,20 @@ body {
 
     /* モバイルでのコード表示調整 */
     .code-display {
-        padding: 10px 12px;
         max-height: 80px;
-        font-size: 10px;
+        font-size: 11px;
+    }
+
+    .code-display pre {
+        padding: 12px;
+        font-size: 11px;
+    }
+
+    .copy-btn {
+        top: 6px;
+        right: 6px;
+        padding: 4px 8px;
+        font-size: 11px;
     }
 
     .code-section h3 {

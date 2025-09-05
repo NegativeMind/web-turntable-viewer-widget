@@ -310,14 +310,62 @@ class EmbedGenerator {
 
     showCode(embedCode) {
         // 前後の空白行を完全に除去
-        const cleanedCode = embedCode.trim().replace(/^\n+|\n+$/g, '');
+        const cleanedCode = embedCode.trim();
+
+        // プレーンテキストを保存（コピー用）
+        this.plainCode = cleanedCode;
+
+        // シンタックスハイライトを無効化し、プレーンテキストをHTMLエスケープして表示
+        const escapedCode = cleanedCode
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
         this.codeContent.textContent = cleanedCode;
         this.codeSection.style.display = 'block';
     }
 
+    highlightHTML(code) {
+        // HTMLエスケープして安全に処理
+        let result = code
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        // 完全な再処理アプローチ：一つずつ確実にハイライト
+        // 1. タグ全体を一度に処理する
+        result = result.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^&gt;]*)?&gt;)/g, (match, openBracket, tagName, rest) => {
+            // 開始ブラケットとタグ名
+            let highlighted = `<span class="highlight-tag">${openBracket}${tagName}</span>`;
+
+            // 残りの部分（属性と閉じ括弧）を処理
+            let restContent = rest;
+
+            // 属性を処理（name="value" 形式）
+            restContent = restContent.replace(/(\s+)([a-zA-Z][a-zA-Z0-9-]*)(=)(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g,
+                '$1<span class="highlight-attr">$2</span>$3<span class="highlight-value">$4</span>');
+
+            // 値なし属性を処理（単独で存在する属性）
+            restContent = restContent.replace(/(\s+)([a-zA-Z][a-zA-Z0-9-]*)(?=\s|&gt;)/g,
+                '$1<span class="highlight-attr">$2</span>');
+
+            // 閉じ括弧をハイライト
+            restContent = restContent.replace(/(&gt;)/, '<span class="highlight-tag">$1</span>');
+
+            return highlighted + restContent;
+        });
+
+        return result;
+    }
+
     async copyCode() {
         try {
-            await navigator.clipboard.writeText(this.codeContent.textContent);
+            // プレーンテキストをコピー
+            await navigator.clipboard.writeText(this.plainCode || this.codeContent.textContent);
             this.copyBtn.textContent = 'コピー完了!';
             this.copyBtn.classList.add('copy-success');
 
@@ -328,7 +376,7 @@ class EmbedGenerator {
         } catch (err) {
             // フォールバック
             const textArea = document.createElement('textarea');
-            textArea.value = this.codeContent.textContent;
+            textArea.value = this.plainCode || this.codeContent.textContent;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
