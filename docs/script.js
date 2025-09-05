@@ -128,10 +128,6 @@ class EmbedGenerator {
         // プレビューエリアをクリア
         this.previewArea.innerHTML = '';
 
-        // 自動初期化を一時的に無効化（DOM監視を停止）
-        const originalQuerySelectorAll = document.querySelectorAll;
-        let isPreviewInitializing = false;
-
         // 既存のターンテーブルインスタンスをクリア
         if (window.TurntableViewer && window.turntableViewerInstances) {
             window.turntableViewerInstances.clear();
@@ -315,51 +311,8 @@ class EmbedGenerator {
         // プレーンテキストを保存（コピー用）
         this.plainCode = cleanedCode;
 
-        // シンタックスハイライトを無効化し、プレーンテキストをHTMLエスケープして表示
-        const escapedCode = cleanedCode
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-
         this.codeContent.textContent = cleanedCode;
         this.codeSection.style.display = 'block';
-    }
-
-    highlightHTML(code) {
-        // HTMLエスケープして安全に処理
-        let result = code
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-
-        // 完全な再処理アプローチ：一つずつ確実にハイライト
-        // 1. タグ全体を一度に処理する
-        result = result.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^&gt;]*)?&gt;)/g, (match, openBracket, tagName, rest) => {
-            // 開始ブラケットとタグ名
-            let highlighted = `<span class="highlight-tag">${openBracket}${tagName}</span>`;
-
-            // 残りの部分（属性と閉じ括弧）を処理
-            let restContent = rest;
-
-            // 属性を処理（name="value" 形式）
-            restContent = restContent.replace(/(\s+)([a-zA-Z][a-zA-Z0-9-]*)(=)(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g,
-                '$1<span class="highlight-attr">$2</span>$3<span class="highlight-value">$4</span>');
-
-            // 値なし属性を処理（単独で存在する属性）
-            restContent = restContent.replace(/(\s+)([a-zA-Z][a-zA-Z0-9-]*)(?=\s|&gt;)/g,
-                '$1<span class="highlight-attr">$2</span>');
-
-            // 閉じ括弧をハイライト
-            restContent = restContent.replace(/(&gt;)/, '<span class="highlight-tag">$1</span>');
-
-            return highlighted + restContent;
-        });
-
-        return result;
     }
 
     async copyCode() {

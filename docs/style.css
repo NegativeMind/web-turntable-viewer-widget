@@ -238,108 +238,6 @@ body {
     border: 2px solid #3498db;
 }
 
-/* ターンテーブルウィジェット用のスタイル */
-.preview-area .turntable-wrapper {
-    position: relative;
-    display: inline-block;
-    margin: 0;
-}
-
-.preview-area .turntable-wrapper>div {
-    position: relative;
-    display: block;
-    margin: 0 auto;
-}
-
-.preview-area iframe {
-    display: block;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.preview-area .drag-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    cursor: grab;
-    z-index: 2;
-}
-
-.preview-area .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    z-index: 10;
-}
-
-.preview-area .loading-overlay.hidden {
-    display: none !important;
-}
-
-.preview-area .loading-content {
-    text-align: center;
-    color: white;
-}
-
-.preview-area .loading-text {
-    font-size: 14px;
-    margin-bottom: 15px;
-    font-weight: 500;
-}
-
-.preview-area .progress-container {
-    width: 200px;
-    margin: 0 auto;
-}
-
-.preview-area .progress-bar {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.preview-area .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    width: 0%;
-    transition: width 0.3s ease;
-}
-
-.preview-area .progress-text {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-.preview-area .vimeo-link {
-    display: block;
-    text-align: center;
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.1);
-    color: #666;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 12px;
-    transition: all 0.2s ease;
-}
-
-.preview-area .vimeo-link:hover {
-    background: rgba(0, 0, 0, 0.2);
-    color: #333;
-}
-
 .placeholder {
     color: #6c757d;
     font-style: italic;
@@ -388,24 +286,6 @@ body {
     padding: 0;
     display: block;
     color: #f0f6fc;
-}
-
-/* GitHubライトテーマのシンタックスハイライト */
-.code-display .highlight-tag {
-    color: #116329;
-    font-weight: normal;
-}
-
-.code-display .highlight-attr {
-    color: #0550ae;
-}
-
-.code-display .highlight-value {
-    color: #0a3069;
-}
-
-.code-display .highlight-punctuation {
-    color: #24292f;
 }
 
 .code-display::-webkit-scrollbar {
@@ -568,19 +448,6 @@ body {
 
     .preview-area .turntable-wrapper {
         max-width: 100%;
-    }
-
-    .preview-area iframe {
-        max-width: 100%;
-        height: auto;
-    }
-
-    .preview-area .loading-overlay {
-        border-radius: 4px;
-    }
-
-    .preview-area .progress-container {
-        width: 150px;
     }
 
     /* モバイルでのコード表示調整 */
