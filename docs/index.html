@@ -29,25 +29,26 @@
 
     <div class="generator">
         <div class="help">
-            <strong>使い方:</strong> Vimeoにアップロードした360度1回転のターンテーブル動画のURLを入力してください。
+            <strong>使い方:</strong><br>
+            Vimeoにアップロードした360度1回転のターンテーブル動画のURLを入力してください。
         </div>
 
         <form id="generatorForm">
-            <div class="form-group">
+            <div class="form-group primary">
                 <label for="vimeoUrl">Vimeo動画URL</label>
                 <input type="url" id="vimeoUrl" placeholder="https://vimeo.com/1114427944">
                 <div class="error" id="urlError" style="display: none;"></div>
             </div>
 
             <div class="form-row">
-                <div class="form-group">
+                <div class="form-group secondary">
                     <label for="rotationDirection">動画の回転方向</label>
                     <select id="rotationDirection">
                         <option value="clockwise">時計回り(デフォルト)</option>
                         <option value="counterclockwise">反時計回り</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group secondary">
                     <label for="videoWidth">埋め込み幅(px)</label>
                     <input type="number" id="videoWidth" value="480" min="200" max="1200">
                 </div>
