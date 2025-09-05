@@ -31,7 +31,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.1-beta/dist/turntable-viewer.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.2-beta/dist/turntable-viewer.css">
 <div class="turntable-wrapper">
     <div vimeo-video-id="1114427944" clockwise-rotation>
         <iframe width="480" frameborder="0" allowfullscreen></iframe>
@@ -48,7 +48,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
     </div>
     <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
 </div>
-<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.1-beta/dist/turntable-viewer.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.2-beta/dist/turntable-viewer.js"></script>
 ```
 
 ### 設定オプション
