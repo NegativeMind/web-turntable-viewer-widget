@@ -380,6 +380,23 @@ body {
     line-height: 1.4;
 }
 
+/* helpセクションのタイトルと説明文のスタイル分離 */
+.help-title {
+    display: block;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #2a3a4a;
+    letter-spacing: 0.05em;
+}
+
+.help-desc {
+    display: block;
+    font-size: 0.9em;
+    color: #444;
+    line-height: 1.7;
+}
+
 @media (max-width: 768px) {
     body {
         padding: 10px;
