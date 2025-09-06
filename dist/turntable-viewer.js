@@ -18,6 +18,9 @@ if (typeof TurntableViewer === 'undefined') {
             this.progressFill = this.container.querySelector('.progress-fill');
             this.progressText = this.container.querySelector('.progress-text');
 
+            // リロードボタンを作成・追加
+            this.createReloadButton();
+
             // DOM要素の存在確認
             console.log('DOM elements check:');
             console.log('- container:', !!this.container);
@@ -188,10 +191,100 @@ if (typeof TurntableViewer === 'undefined') {
                     angleDisplay.style.display = 'block';
                     console.log('Angle display enabled after successful initialization and position adjustment');
                 }
+
+                // リロードボタンは常に表示（非表示にしない）
             } catch (error) {
                 console.error('TurntableViewer initialization failed:', error);
                 this.updateProgress(100, '初期化エラーが発生しました');
                 this.hideLoadingOverlay();
+                // エラー時もリロードボタンは常に表示
+            }
+        }
+
+        /**
+         * リロードボタンを作成
+         */
+        createReloadButton() {
+            this.reloadButton = document.createElement('button');
+            this.reloadButton.className = 'reload-button';
+            this.reloadButton.title = 'ビデオを再読み込み';
+
+            // リロードアイコン（SVG）
+            this.reloadButton.innerHTML = `
+                <svg class="reload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 0 0-9-9c-4.97 0-9 4.03-9 9s4.03 9 9 9"/>
+                    <path d="M21 12a9 9 0 0 1-9 9"/>
+                    <polyline points="17,8 21,12 17,16"/>
+                </svg>
+            `;
+
+            // クリックイベント
+            this.reloadButton.addEventListener('click', () => {
+                this.handleReload();
+            });
+
+            // コンテナに追加
+            this.container.appendChild(this.reloadButton);
+        }
+
+        /**
+         * リロードボタンを表示
+         */
+        showReloadButton() {
+            if (this.reloadButton) {
+                this.reloadButton.style.display = 'flex';
+            }
+        }
+
+        /**
+         * リロードボタンを非表示
+         */
+        hideReloadButton() {
+            if (this.reloadButton) {
+                this.reloadButton.style.display = 'none';
+            }
+        }
+
+        /**
+         * リロード処理
+         */
+        async handleReload() {
+            if (this.isReloading) return;
+
+            this.isReloading = true;
+            this.reloadButton.classList.add('loading');
+
+            try {
+                console.log('Reloading turntable viewer...');
+
+                // 現在のプレイヤーを破棄
+                if (this.player) {
+                    try {
+                        this.player.destroy();
+                    } catch (e) {
+                        console.warn('Error destroying player:', e);
+                    }
+                    this.player = null;
+                }
+
+                // 状態をリセット
+                this.state = {
+                    isReady: false,
+                    isDragging: false,
+                    currentTime: 0
+                };
+
+                // ローディングタイムアウトをリセット
+                this.loadingStartTime = null;
+
+                // 初期化をやり直し
+                await this.initialize();
+
+            } catch (error) {
+                console.error('Reload failed:', error);
+            } finally {
+                this.isReloading = false;
+                this.reloadButton.classList.remove('loading');
             }
         }
 
@@ -748,8 +841,50 @@ if (typeof TurntableViewer === 'undefined') {
 
             if (text && this.loadingText) {
                 this.loadingText.textContent = text;
-            } else if (text) {
-                console.warn('Loading text element not found');
+            }
+
+            // ローディングタイムアウト監視
+            this.checkLoadingTimeout(percentage);
+        }
+
+        /**
+         * ローディングタイムアウトをチェック
+         */
+        checkLoadingTimeout(percentage) {
+            // 初回またはリセット時にタイマー開始
+            if (!this.loadingStartTime) {
+                this.loadingStartTime = Date.now();
+                this.lastProgressTime = Date.now();
+                this.lastProgressPercentage = percentage;
+                return;
+            }
+
+            const now = Date.now();
+            const totalLoadingTime = now - this.loadingStartTime;
+            const timeSinceLastProgress = now - this.lastProgressTime;
+
+            // プログレスが進んだ場合は時間を更新
+            if (percentage > this.lastProgressPercentage) {
+                this.lastProgressTime = now;
+                this.lastProgressPercentage = percentage;
+                return;
+            }
+
+            // 30秒間プログレスが進んでいない場合、または総ローディング時間が60秒を超えた場合
+            const STALLED_TIMEOUT = 30000; // 30秒
+            const TOTAL_TIMEOUT = 60000;   // 60秒
+
+            if (timeSinceLastProgress > STALLED_TIMEOUT || totalLoadingTime > TOTAL_TIMEOUT) {
+                console.warn(`Loading timeout detected. Stalled: ${timeSinceLastProgress}ms, Total: ${totalLoadingTime}ms`);
+
+                // ローディングが停止していることを示す
+                if (this.loadingText) {
+                    this.loadingText.textContent = 'ローディングが停止しました - リロードボタンを押してください';
+                    this.loadingText.style.color = '#ff6b6b';
+                }
+
+                // タイムアウト検出をリセット（重複表示を防ぐ）
+                this.loadingStartTime = null;
             }
         }
 

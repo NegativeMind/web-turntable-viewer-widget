@@ -107,6 +107,59 @@
     /* 数値を等幅で表示 */
 }
 
+/* リロードボタン（復旧用） */
+.reload-button {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+    /* 常に表示 */
+}
+
+.reload-button:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+.reload-button:active {
+    transform: scale(0.95);
+}
+
+/* リロードアイコン */
+.reload-icon {
+    width: 14px;
+    height: 14px;
+    color: white;
+    fill: currentColor;
+}
+
+/* リロードアニメーション */
+.reload-button.loading .reload-icon {
+    animation: reload-spin 1s linear infinite;
+}
+
+@keyframes reload-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* 数値部分の固定幅 */
 #rotation-angle {
     display: inline-block;
