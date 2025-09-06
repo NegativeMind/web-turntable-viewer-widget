@@ -242,8 +242,9 @@ body {
     border: 2px solid #3498db;
     /* ターンテーブル表示時の最適化 */
     padding: 10px;
-    text-align: initial;
-    align-items: flex-start;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
 }
 
 .placeholder {
