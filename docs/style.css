@@ -383,9 +383,9 @@ body {
 /* helpセクションのタイトルと説明文のスタイル分離 */
 .help-title {
     display: block;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: bold;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
     color: #2a3a4a;
     letter-spacing: 0.05em;
 }
