@@ -232,11 +232,18 @@ body {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    /* スマホでのタッチ操作最適化 */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
 }
 
 .preview-area:has(div:not(.placeholder)) {
     background: white;
     border: 2px solid #3498db;
+    /* ターンテーブル表示時の最適化 */
+    padding: 10px;
+    text-align: initial;
+    align-items: flex-start;
 }
 
 .placeholder {
@@ -368,7 +375,7 @@ body {
     border-radius: 8px;
     margin-bottom: 12px;
     border-left: 4px solid #3182ce;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.4;
 }
 
@@ -443,7 +450,14 @@ body {
 
     /* プレビューエリアのモバイル対応 */
     .preview-area {
-        padding: 12px;
+        padding: 8px;
+        /* モバイルでのタッチ最適化 */
+        touch-action: manipulation;
+    }
+
+    .preview-area:has(div:not(.placeholder)) {
+        padding: 5px;
+        align-items: center;
     }
 
     /* モバイルでのコード表示調整 */
