@@ -42,7 +42,7 @@ class EmbedGenerator {
     }
 
     generateEmbed() {
-        const url = this.vimeoUrl.value.trim();
+        let url = this.vimeoUrl.value.trim();
         const width = parseInt(this.videoWidth.value) || 480;
         const isClockwise = this.rotationDirection.value === 'clockwise';
 
@@ -51,10 +51,9 @@ class EmbedGenerator {
 
         let finalUrl = url;
 
-        // URLが空の場合はデフォルトURLを使用
+        // URLが空の場合はinput要素のplaceholder値を使用
         if (!url) {
-            finalUrl = 'https://vimeo.com/1118303126'; // デフォルトのデモ動画
-            // 入力欄にもデフォルト値を表示
+            finalUrl = this.vimeoUrl.placeholder || 'https://vimeo.com/1118303126';
             this.vimeoUrl.value = finalUrl;
         }
 
