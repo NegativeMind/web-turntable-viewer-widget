@@ -53,14 +53,14 @@ class EmbedGenerator {
 
         // URLが空の場合はデフォルトURLを使用
         if (!url) {
-            finalUrl = 'https://vimeo.com/1114427944'; // デフォルトのデモ動画
+            finalUrl = 'https://vimeo.com/1118303126'; // デフォルトのデモ動画
             // 入力欄にもデフォルト値を表示
             this.vimeoUrl.value = finalUrl;
         }
 
         const videoId = this.extractVideoId(finalUrl);
         if (!videoId) {
-            this.showError('有効なVimeoのURLを入力してください。\n例: https://vimeo.com/1114427944');
+            this.showError('有効なVimeoのURLを入力してください。\n例: https://vimeo.com/1118303126');
             return;
         }
 

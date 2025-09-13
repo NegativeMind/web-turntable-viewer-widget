@@ -23,17 +23,17 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 2. **Vimeoへアップロード**
    - [Vimeo](https://vimeo.com)に360度1回転の動画をアップロード・公開
-   - アップロードした動画のIDを取得（例：`https://vimeo.com/1114427944` → ID: `1114427944`）
+   - アップロードした動画のIDを取得（例：`https://vimeo.com/1118303126` → ID: `1118303126`）
 
 ### 2. コード埋め込み
 
-このウィジェットをブログ記事などに貼りつける場合、以下のコードのvimeo-video-id="1114427944"の数字を使用したいVimeoの動画IDに書き換えて埋め込んでください。(以下の例では1114427944の動画を使用)
+このウィジェットをブログ記事などに貼りつける場合、以下のコードのvimeo-video-id="1118303126"の数字を使用したいVimeoの動画IDに書き換えて埋め込んでください。(以下の例では1118303126の動画を使用)
 
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.4-beta/dist/turntable-viewer.css">
 <div class="turntable-wrapper">
-    <div vimeo-video-id="1114427944" clockwise-rotation>
+    <div vimeo-video-id="1118303126" clockwise-rotation>
         <iframe width="480" frameborder="0" allowfullscreen></iframe>
         <div class="drag-overlay"></div>
         <div class="loading-overlay">
