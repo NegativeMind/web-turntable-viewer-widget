@@ -1,0 +1,44 @@
+{
+    "name": "web-turntable-viewer-widget",
+    "version": "0.1.4-beta",
+    "description": "Interactive 360° turntable viewer widget for Vimeo videos",
+    "type": "module",
+    "main": "./dist/turntable-viewer.js",
+    "module": "./dist/turntable-viewer.js",
+    "exports": {
+        ".": {
+            "import": "./dist/turntable-viewer.js",
+            "require": "./dist/turntable-viewer.umd.cjs"
+        },
+        "./dist/turntable-viewer.css": "./dist/turntable-viewer.css"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "vite build && vite preview"
+    },
+    "keywords": [
+        "vimeo",
+        "360",
+        "turntable",
+        "viewer",
+        "widget",
+        "interactive"
+    ],
+    "author": "NegativeMind",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/NegativeMind/web-turntable-viewer-widget.git"
+    },
+    "devDependencies": {
+        "vite": "^5.4.11"
+    },
+    "peerDependencies": {
+        "@vimeo/player": "^2.0.0"
+    }
+}

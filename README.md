@@ -75,6 +75,48 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 <iframe width="640" height="480" frameborder="0" allowfullscreen></iframe>
 ```
 
+## 開発環境
+
+このプロジェクトはNode.js + Viteで管理されています。
+
+### セットアップ
+
+```bash
+# 依存関係のインストール
+npm install
+
+# 開発サーバーの起動
+npm run dev
+
+# ウィジェットのビルド
+npm run build
+
+# ビルド結果のプレビュー
+npm run preview
+```
+
+### プロジェクト構成
+
+```
+web-turntable-viewer-widget/
+├── src/                      # ソースコード
+│   ├── turntable-viewer.js  # メインのJavaScriptファイル
+│   └── turntable-viewer.css # スタイルシート
+├── dist/                     # ビルド出力先（CDN配信用）
+├── tests/                    # テストページ
+├── docs/                     # 埋め込みコード作成ツール
+├── vite.config.js           # Vite設定ファイル
+├── package.json             # プロジェクト設定
+└── README.md
+```
+
+### npm スクリプト
+
+- `npm run dev` - 開発サーバーを起動（http://localhost:3000）
+- `npm run build` - ウィジェットをビルド（dist/フォルダに出力）
+- `npm run preview` - ビルド結果をプレビュー
+- `npm run test` - ビルド＆プレビュー
+
 ## 利用上の注意
 
 このウィジェットはVimeoの公式埋め込み機能およびAPIを利用しています。ご利用の際は、必ずVimeoの[利用規約](https://vimeo.com/legal/terms/ja)を遵守してください。
