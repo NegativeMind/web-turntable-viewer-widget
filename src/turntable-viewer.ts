@@ -116,7 +116,7 @@ class TurntableViewer {
         };
 
         // イベントハンドラーをバインド
-        // bindMethods(); // 削除 - アロー関数で対応
+        this.bindMethods();
 
         // 初期化
         this.initialize();
@@ -161,6 +161,18 @@ class TurntableViewer {
             isClockwise: isClockwise,
             videoId: videoId
         };
+    }
+
+    /**
+     * メソッドをバインド
+     */
+    bindMethods(): void {
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onTouchStart = this.onTouchStart.bind(this);
+        this.onTouchMove = this.onTouchMove.bind(this);
+        this.onTouchEnd = this.onTouchEnd.bind(this);
     }
 
     /**
@@ -658,9 +670,18 @@ class TurntableViewer {
      */
     async adjustVideoAspectRatio(): Promise<void> {
         try {
-            // 動画の自然なサイズを取得
-            const videoWidth = await this.state.player.getVideoWidth();
-            const videoHeight = await this.state.player.getVideoHeight();
+            console.log('Getting video dimensions...');
+            // タイムアウト付きで動画の自然なサイズを取得
+            const videoWidth = await this.withTimeout(
+                this.state.player.getVideoWidth(),
+                3000,
+                'Failed to get video width'
+            );
+            const videoHeight = await this.withTimeout(
+                this.state.player.getVideoHeight(),
+                3000,
+                'Failed to get video height'
+            );
             const aspectRatio = videoHeight / videoWidth;
 
             console.log(`Player Video dimensions: ${videoWidth}x${videoHeight}, aspect ratio: ${aspectRatio.toFixed(3)}`);
@@ -683,7 +704,7 @@ class TurntableViewer {
                 console.log('Aspect ratio already correct, no adjustment needed');
             }
         } catch (error) {
-            console.warn('Could not get video dimensions, keeping current size:', error);
+            console.warn('Could not get video dimensions, keeping current size:', getErrorMessage(error));
             // エラーの場合は現在のサイズを維持
             this.adjustLoadingOverlaySize();
         }
@@ -741,7 +762,7 @@ class TurntableViewer {
                 this.state.player = new Vimeo.Player(this.iframe);
                 this.updateProgress(40, 'Connecting to player...');
             } catch (error) {
-                throw new Error(`Failed to create Vimeo player: ${error.message}`);
+                throw new Error(`Failed to create Vimeo player: ${getErrorMessage(error)}`);
             }
 
             // iframeがロードされるまで待機
@@ -757,7 +778,7 @@ class TurntableViewer {
                 );
                 console.log('Duration:', this.state.duration);
             } catch (error) {
-                console.warn('Could not get video duration:', error.message);
+                console.warn('Could not get video duration:', getErrorMessage(error));
                 this.state.duration = 60; // デフォルト値
             }
 
@@ -765,7 +786,7 @@ class TurntableViewer {
             try {
                 await this.adjustVideoAspectRatio();
             } catch (error) {
-                console.warn('Could not adjust video aspect ratio:', error.message);
+                console.warn('Could not adjust video aspect ratio:', getErrorMessage(error));
             }
 
             this.updateProgress(75, 'Applying player settings...');
@@ -779,7 +800,7 @@ class TurntableViewer {
             try {
                 await this.preloadVideo();
             } catch (error) {
-                console.warn('Video preloading failed:', error.message);
+                console.warn('Video preloading failed:', getErrorMessage(error));
             }
 
             this.updateProgress(90, 'Setting initial state...');
@@ -788,7 +809,7 @@ class TurntableViewer {
             try {
                 await this.setInitialPlayerState();
             } catch (error) {
-                console.warn('Could not set initial player state:', error.message);
+                console.warn('Could not set initial player state:', getErrorMessage(error));
             }
 
             // 初期角度表示を更新
@@ -809,11 +830,12 @@ class TurntableViewer {
             console.error('Player initialization failed:', error);
 
             // エラーの種類に応じた処理
-            if (error.message.includes('Failed to create Vimeo player')) {
+            const errorMessage = getErrorMessage(error);
+            if (errorMessage.includes('Failed to create Vimeo player')) {
                 this.showError('Player Error', 'Could not create video player. Please check your connection and try again.');
-            } else if (error.message.includes('Video not found')) {
+            } else if (errorMessage.includes('Video not found')) {
                 this.showError('Video Not Found', 'The specified video could not be found. Please check the video ID.');
-            } else if (error.message.includes('Access denied')) {
+            } else if (errorMessage.includes('Access denied')) {
                 this.showError('Access Denied', 'This video is private or restricted. Please check the video permissions.');
             } else {
                 this.showError('Initialization Error', 'Failed to load the video player. Please try refreshing the page.');
@@ -1187,15 +1209,15 @@ class TurntableViewer {
      * イベントリスナーの追加
      */
     attachEventListeners(): void {
-        this.dragOverlay.addEventListener('mousedown', (e) => this.onMouseDown(e));
-        this.dragOverlay.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
-        window.addEventListener('resize', this.debounce(() => this.onWindowResize(), this.config.RESIZE_DEBOUNCE_MS));
+        this.dragOverlay.addEventListener('mousedown', this.onMouseDown);
+        this.dragOverlay.addEventListener('touchstart', this.onTouchStart, { passive: false });
+        window.addEventListener('resize', this.onWindowResize);
     }
 
     /**
      * マウスダウンイベントハンドラー
      */
-    async onMouseDown(e: MouseEvent) {
+    async onMouseDown(e: MouseEvent): Promise<void> {
         // 既にドラッグ中の場合は無視
         if (this.state.isDragging) return;
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Turntable Viewer Widget</title>
+    <title>Web Turntable Viewer Widget - Build Test</title>
 
     <style>
         body {
@@ -73,16 +73,17 @@
 
 <body>
     <div class="test-info">
-        <h1>Web Turntable Viewer Widget</h1>
+        <h1>Web Turntable Viewer Widget - Build Test</h1>
+        <p style="margin: 5px 0; font-size: 0.9rem;">Testing built files from dist/</p>
     </div>
     <div class="demo-area">
         <div class="embed-section">
 
-            <!-- 埋め込みコード（開発用 - npm run dev で動作） -->
+            <!-- 埋め込みコード（ビルド済み - dist/から読み込み） -->
             <script src="https://player.vimeo.com/api/player.js"></script>
-            <link rel="stylesheet" href="/src/turntable-viewer.css">
+            <link rel="stylesheet" href="../dist/turntable-viewer.css">
             <div class="turntable-wrapper">
-                <div vimeo-video-id="1118303126" clockwise-rotation>
+                <div id="turntable-test" vimeo-video-id="1118303126" clockwise-rotation>
                     <iframe width="480" frameborder="0" allowfullscreen></iframe>
                     <div class="drag-overlay"></div>
                     <div class="loading-overlay">
@@ -102,7 +103,17 @@
                 </div>
                 <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
             </div>
-            <script type="module" src="/src/turntable-viewer.ts"></script>
+            <script type="module">
+                import { TurntableViewer } from '../dist/turntable-viewer.js';
+                // ページ読み込み完了後に初期化
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        new TurntableViewer('turntable-test');
+                    });
+                } else {
+                    new TurntableViewer('turntable-test');
+                }
+            </script>
             <!-- 埋め込みコード終了 -->
 
         </div>
