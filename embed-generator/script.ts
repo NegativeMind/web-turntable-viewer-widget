@@ -74,7 +74,7 @@ class EmbedGenerator {
 
         const videoId = this.extractVideoId(finalUrl);
         if (!videoId) {
-            this.showError('有効なVimeoのURLを入力してください。\\n例: https://vimeo.com/1118303126');
+            this.showError('有効なVimeoのURLを入力してください。\n例: https://vimeo.com/1118303126');
             return;
         }
 
@@ -115,7 +115,7 @@ class EmbedGenerator {
             '<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@latest/dist/turntable-viewer.js"><' + '/script>'
         ];
 
-        return embedCode.join('\\n').trim();
+        return embedCode.join('\n').trim();
     }
 
     showError(message: string): void {
