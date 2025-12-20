@@ -55,7 +55,6 @@ export interface TurntableState {
     player: Vimeo.Player | null;
     duration: number;
     isPlayerReady: boolean;
-    isPreloaded: boolean;
     isDragging: boolean;
     dragStartX: number;
     startTime: number;

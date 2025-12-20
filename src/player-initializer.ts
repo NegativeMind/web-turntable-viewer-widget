@@ -31,19 +31,20 @@ export class PlayerInitializer {
      * プレイヤーの基本情報取得
      */
     async getPlayerDuration(player: any, onProgress?: (progress: number, message: string) => void): Promise<number> {
-        try {
-            onProgress?.(60, 'Loading player settings...');
-            const duration = await withTimeout(
-                player.getDuration(),
-                5000,
-                'Failed to get video duration'
-            );
-            console.log('Duration:', duration);
-            return duration;
-        } catch (error) {
-            console.warn('Could not get video duration:', getErrorMessage(error));
-            return 60; // デフォルト値
+        onProgress?.(60, 'Loading player settings...');
+
+        const duration = await withTimeout(
+            player.getDuration(),
+            8000,
+            'Failed to get video duration'
+        );
+        console.log('Duration:', duration);
+
+        if (!duration || duration <= 0) {
+            throw new Error('Invalid video duration received');
         }
+
+        return duration;
     }
 
     /**
@@ -117,35 +118,35 @@ export class PlayerInitializer {
     }
 
     /**
-     * 動画の事前ロード
+     * 動画の事前ロード（失敗しても続行可能）
      */
     async preloadVideo(player: any, duration: number, onProgress?: (progress: number, message: string) => void): Promise<boolean> {
         try {
-            onProgress?.(85, 'Preloading video...');
-            console.log('Starting video preload...');
+            onProgress?.(85, 'Buffering video...');
+            console.log('Starting video buffer preload...');
 
-            await player.play();
-            await delay(1000);
-            await player.pause();
-
-            onProgress?.(87, 'Buffering video...');
-
+            // 再生せずにseekだけでバッファリング（ブラウザの自動再生ブロックを回避）
             const preloadPoints = [0, 0.5];
             for (let i = 0; i < preloadPoints.length; i++) {
                 const point = preloadPoints[i];
                 const seekTime = duration * point;
-                await player.setCurrentTime(seekTime);
+                await withTimeout(
+                    player.setCurrentTime(seekTime),
+                    5000,
+                    `Preload seek timeout at ${point * 100}%`
+                );
                 await delay(300);
 
-                onProgress?.(87 + (i + 1) * 1, `Buffering ${Math.round(point * 100)}%...`);
+                onProgress?.(85 + (i + 1) * 2, `Buffering ${Math.round(point * 100)}%...`);
             }
 
-            await player.setCurrentTime(0);
+            await withTimeout(player.setCurrentTime(0), 5000, 'Preload final seek timeout');
 
-            console.log('Video preload completed');
+            console.log('Video buffer preload completed');
             return true;
         } catch (error) {
-            console.warn('Video preload failed, continuing without preload:', error);
+            // バッファリングはオプショナルなので、失敗しても問題ない
+            console.log('Video buffer preload skipped:', getErrorMessage(error));
             return false;
         }
     }
@@ -156,10 +157,12 @@ export class PlayerInitializer {
     async setInitialPlayerState(player: any, onProgress?: (progress: number, message: string) => void): Promise<void> {
         onProgress?.(90, 'Setting initial state...');
 
+        // playはブラウザの自動再生ポリシーでブロックされる可能性があるが、
+        // pauseとseekが成功すればウィジェットは機能する
         const actions = [
-            { name: 'play', action: () => player.play() },
-            { name: 'pause', action: () => player.pause() },
-            { name: 'seek to start', action: () => player.setCurrentTime(0) }
+            { name: 'play', action: () => player.play(), optional: true },
+            { name: 'pause', action: () => player.pause(), optional: false },
+            { name: 'seek to start', action: () => player.setCurrentTime(0), optional: false }
         ];
 
         for (const action of actions) {
@@ -167,7 +170,13 @@ export class PlayerInitializer {
                 await withTimeout(action.action(), 3000, `Failed to ${action.name}`);
                 console.log(`Successfully executed: ${action.name}`);
             } catch (error) {
-                console.warn(`Action ${action.name} failed:`, getErrorMessage(error));
+                if (action.optional) {
+                    // オプショナルな操作（play等）の失敗は通常動作
+                    console.log(`${action.name} skipped (likely blocked by browser autoplay policy)`);
+                } else {
+                    // 必須の操作（pause/seek）の失敗は警告
+                    console.warn(`Action ${action.name} failed:`, getErrorMessage(error));
+                }
             }
         }
     }

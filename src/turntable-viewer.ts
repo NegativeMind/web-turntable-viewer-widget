@@ -104,7 +104,6 @@ class TurntableViewer {
             player: null,
             duration: 0,
             isPlayerReady: false,
-            isPreloaded: false,
             isDragging: false,
             dragStartX: 0,
             startTime: 0,
@@ -199,14 +198,30 @@ class TurntableViewer {
         try {
             console.log('Reloading turntable viewer...');
 
+            // DragHandlerのイベントリスナーを削除
+            if (this.dragHandler) {
+                this.dragHandler.removeEventListeners();
+                this.dragHandler = null;
+            }
+
+            // プレイヤーを破棄
             if (this.state.player) {
                 try {
-                    this.state.player.destroy();
+                    await this.state.player.destroy();
+                    console.log('Player destroyed successfully');
                 } catch (e) {
                     console.warn('Error destroying player:', e);
                 }
                 this.state.player = null;
             }
+
+            // iframeのsrcをクリアして完全にリセット
+            const oldSrc = this.iframe.src;
+            this.iframe.src = 'about:blank';
+            console.log('iframe src cleared');
+
+            // 少し待機してブラウザがクリーンアップするのを待つ
+            await delay(300);
 
             // 状態をリセット
             this.state = {
@@ -218,15 +233,12 @@ class TurntableViewer {
                 dragStartX: 0,
                 lastDragUpdate: 0,
                 pendingApiCall: null,
-                lastDisplayedAngle: 0,
-                isPreloaded: false
+                lastDisplayedAngle: 0
             };
 
             this.progressManager.resetTimeout();
 
-            // DragHandlerを再作成する必要があるため、nullに
-            this.dragHandler = null;
-
+            // 再初期化
             await this.initialize();
 
         } catch (error) {
@@ -257,12 +269,20 @@ class TurntableViewer {
 
             this.progressManager.updateProgress(20, 'Creating player...');
 
+            // iframeが新しいURLをロードするまで待機（リロード時は長めに）
+            if (this.isReloading) {
+                await delay(1500);
+                console.log('Extended delay for reload');
+            } else {
+                await delay(this.config.PLAYER_LOAD_DELAY_MS);
+            }
+
             // プレイヤーを作成
             this.state.player = await this.playerInitializer.createPlayer((progress, message) => {
                 this.progressManager.updateProgress(progress, message);
             });
 
-            // iframeがロードされるまで待機
+            // iframeが完全にロードされるまで待機
             await delay(this.config.PLAYER_LOAD_DELAY_MS);
             this.progressManager.updateProgress(60, 'Loading player settings...');
 
@@ -283,10 +303,8 @@ class TurntableViewer {
             // プレイヤー設定を適用
             await this.playerInitializer.applyPlayerSettings(this.state.player);
 
-            this.progressManager.updateProgress(85, 'Preloading video...');
-
-            // 動画の事前ロード
-            this.state.isPreloaded = await this.playerInitializer.preloadVideo(
+            // 動画の事前バッファリング（オプショナル）
+            await this.playerInitializer.preloadVideo(
                 this.state.player,
                 this.state.duration,
                 (progress, message) => this.progressManager.updateProgress(progress, message)
@@ -316,13 +334,15 @@ class TurntableViewer {
 
             const errorMessage = getErrorMessage(error);
             if (errorMessage.includes('Failed to create Vimeo player')) {
-                this.showError('Player Error', 'Could not create video player. Please check your connection and try again.');
+                this.showError('プレイヤーエラー', 'ビデオプレイヤーを作成できませんでした。接続を確認してリロードしてください。');
             } else if (errorMessage.includes('Video not found')) {
-                this.showError('Video Not Found', 'The specified video could not be found. Please check the video ID.');
+                this.showError('ビデオが見つかりません', '指定されたビデオが見つかりませんでした。ビデオIDを確認してください。');
             } else if (errorMessage.includes('Access denied')) {
-                this.showError('Access Denied', 'This video is private or restricted. Please check the video permissions.');
+                this.showError('アクセス拒否', 'このビデオは非公開または制限されています。ビデオの権限を確認してください。');
+            } else if (errorMessage.includes('Failed to get video duration')) {
+                this.showError('ビデオ情報の取得に失敗', 'ビデオの長さを取得できませんでした。ネットワーク接続を確認してリロードしてください。');
             } else {
-                this.showError('Initialization Error', 'Failed to load the video player. Please try refreshing the page.');
+                this.showError('初期化エラー', `ビデオプレイヤーの読み込みに失敗しました。<br><br>エラー: ${errorMessage}<br><br>リロードボタンを押して再試行してください。`);
             }
 
             this.videoConfigManager.setInitialSizeFallback(() => {
@@ -368,9 +388,16 @@ class TurntableViewer {
     }
 
     /**
-     * エラー表示
+     * エラー表示（ProgressManagerを使用）
      */
-    showError(title: string, message: string): void {
+    private showError(title: string, message: string): void {
+        this.progressManager.showError(title, message);
+    }
+
+    /**
+     * エラー表示（非推奨：後方互換性のため残す）
+     */
+    private showError_old(title: string, message: string): void {
         this.uiManager.showError(title, message);
     }
 
