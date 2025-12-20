@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # ---- Build Output ----
-dist/
+# dist/ は GitHub Actions が自動コミット
 docs/
 
 # ---- OS / IDE ----
