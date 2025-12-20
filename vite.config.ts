@@ -24,8 +24,8 @@ export default defineConfig({
             name: 'TurntableViewer',
             formats: ['es', 'umd'],
             fileName: (format) => {
-                if (format === 'es') return 'turntable-viewer.js';
-                if (format === 'umd') return 'turntable-viewer.umd.cjs';
+                if (format === 'es') return 'turntable-viewer.esm.js';
+                if (format === 'umd') return 'turntable-viewer.js';
                 return `turntable-viewer.${format}.js`;
             }
         },
