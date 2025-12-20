@@ -1,5 +1,5 @@
 // ビルド後処理: docs/embed-generator/* を docs/* に移動
-import { readdirSync, renameSync, rmSync, existsSync } from 'fs';
+import { readdirSync, renameSync, rmSync, existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const docsDir = 'docs';
@@ -27,3 +27,8 @@ if (existsSync(embedGenDir)) {
 } else {
     console.log('embed-generator folder not found, skipping move operation');
 }
+
+// GitHub Pages で Jekyll ビルドを無効化
+const nojekyllPath = join(docsDir, '.nojekyll');
+writeFileSync(nojekyllPath, '');
+console.log('✓ Created .nojekyll file to disable Jekyll processing');
