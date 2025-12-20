@@ -1,5 +1,5 @@
 // ウィジェットをインポート（開発環境用）
-import '../src/turntable-viewer.js';
+import '../src/turntable-viewer.ts';
 
 class EmbedGenerator {
     constructor() {

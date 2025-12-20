@@ -77,7 +77,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ## 開発環境
 
-このプロジェクトはNode.js + Viteで管理されています。
+このプロジェクトはNode.js + Vite + TypeScriptで管理されています。
 
 ### セットアップ
 
@@ -99,13 +99,15 @@ npm run preview
 
 ```
 web-turntable-viewer-widget/
-├── src/                      # ソースコード
-│   ├── turntable-viewer.js  # メインのJavaScriptファイル
-│   └── turntable-viewer.css # スタイルシート
+├── src/                      # ソースコード（TypeScript）
+│   ├── turntable-viewer.ts  # メインのTypeScriptファイル
+│   ├── turntable-viewer.css # スタイルシート
+│   └── types.ts             # 型定義ファイル
 ├── dist/                     # ビルド出力先（CDN配信用）
 ├── tests/                    # テストページ
 ├── docs/                     # 埋め込みコード作成ツール（GitHub Pages用）
 ├── embed-generator/          # 埋め込みコード作成ツール（開発環境用）
+├── tsconfig.json            # TypeScript設定ファイル
 ├── vite.config.js           # Vite設定ファイル
 ├── package.json             # プロジェクト設定
 └── README.md

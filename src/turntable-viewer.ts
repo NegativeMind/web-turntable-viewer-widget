@@ -1,26 +1,75 @@
 // CSSをインポート
 import './turntable-viewer.css';
+import type { TurntableConfig, TurntableState, VideoInfo } from './types';
+
+// エラー処理ヘルパー関数
+function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    return String(error);
+}
 
 /**
  * Web Turntable Viewer
  * ドラッグ操作で360度回転表示を制御するクラス
  */
 class TurntableViewer {
-    constructor(containerId) {
+    private container: HTMLElement;
+    private iframe: HTMLIFrameElement;
+    private angleEl: HTMLElement | null;
+    private angleDisplay: HTMLElement | null;
+    private dragOverlay: HTMLElement;
+    private loadingOverlay: HTMLElement;
+    private loadingText: HTMLElement;
+    private progressFill: HTMLElement;
+    private progressText: HTMLElement;
+    private reloadButton: HTMLButtonElement;
+    private config: TurntableConfig;
+    private state: TurntableState;
+    private isReloading: boolean = false;
+    private loadingStartTime: number | null = null;
+    private lastProgressTime: number = 0;
+    private lastProgressPercentage: number = 0;
+
+    constructor(containerId: string) {
         // DOM要素の取得
-        this.container = document.getElementById(containerId);
-        this.iframe = this.container.querySelector('iframe');
-        this.angleEl = this.container.querySelector('#rotation-angle');
-        this.angleDisplay = this.container.querySelector('#angle-display');
-        this.dragOverlay = this.container.querySelector('.drag-overlay');
+        const container = document.getElementById(containerId);
+        if (!container) {
+            throw new Error(`Container element with id "${containerId}" not found`);
+        }
+        this.container = container;
+
+        const iframe = this.container.querySelector<HTMLIFrameElement>('iframe');
+        if (!iframe) {
+            throw new Error('iframe element not found in container');
+        }
+        this.iframe = iframe;
+
+        this.angleEl = this.container.querySelector<HTMLElement>('#rotation-angle');
+        this.angleDisplay = this.container.querySelector<HTMLElement>('#angle-display');
+
+        const dragOverlay = this.container.querySelector<HTMLElement>('.drag-overlay');
+        if (!dragOverlay) {
+            throw new Error('drag-overlay element not found in container');
+        }
+        this.dragOverlay = dragOverlay;
 
         // プログレスバー関連要素
-        this.loadingOverlay = this.container.querySelector('.loading-overlay');
-        this.loadingText = this.container.querySelector('.loading-text');
-        this.progressFill = this.container.querySelector('.progress-fill');
-        this.progressText = this.container.querySelector('.progress-text');
+        const loadingOverlay = this.container.querySelector<HTMLElement>('.loading-overlay');
+        const loadingText = this.container.querySelector<HTMLElement>('.loading-text');
+        const progressFill = this.container.querySelector<HTMLElement>('.progress-fill');
+        const progressText = this.container.querySelector<HTMLElement>('.progress-text');
+
+        if (!loadingOverlay || !loadingText || !progressFill || !progressText) {
+            throw new Error('Required loading elements not found in container');
+        }
+
+        this.loadingOverlay = loadingOverlay;
+        this.loadingText = loadingText;
+        this.progressFill = progressFill;
+        this.progressText = progressText;
 
         // リロードボタンを作成・追加
+        this.reloadButton = document.createElement('button');
         this.createReloadButton();
 
         // DOM要素の存在確認
@@ -46,8 +95,9 @@ class TurntableViewer {
             this.config = this.getConfig();
             console.log('Configuration loaded:', this.config);
         } catch (error) {
-            console.error('Configuration error:', error.message);
-            this.showError('Configuration Error', error.message);
+            const message = getErrorMessage(error);
+            console.error('Configuration error:', message);
+            this.showError('Configuration Error', message);
             throw error; // 初期化を停止
         }
 
@@ -66,7 +116,7 @@ class TurntableViewer {
         };
 
         // イベントハンドラーをバインド
-        this.bindMethods();
+        // bindMethods(); // 削除 - アロー関数で対応
 
         // 初期化
         this.initialize();
@@ -75,7 +125,7 @@ class TurntableViewer {
     /**
      * 設定を取得
      */
-    getConfig() {
+    getConfig(): TurntableConfig {
         const videoId = this.container.getAttribute('vimeo-video-id');
 
         // clockwise-rotation属性の取得（ブール値）
@@ -116,7 +166,7 @@ class TurntableViewer {
     /**
      * 表示サイズに基づいてPIXELS_PER_ROTATIONを動的に計算
      */
-    calculatePixelsPerRotation() {
+    calculatePixelsPerRotation(): number {
         // サイズ取得の優先順位:
         // 1. HTMLのwidth属性
         // 2. 計算されたサイズ（CSS適用後）
@@ -154,24 +204,11 @@ class TurntableViewer {
     }
 
     /**
-     * メソッドをバインド
-     */
-    bindMethods() {
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
-        this.onTouchStart = this.onTouchStart.bind(this);
-        this.onTouchMove = this.onTouchMove.bind(this);
-        this.onTouchEnd = this.onTouchEnd.bind(this);
-        this.onWindowResize = this.debounce(this.onWindowResize.bind(this), this.config.RESIZE_DEBOUNCE_MS);
-    }
-
-    /**
      * 初期化
      */
-    async initialize() {
+    async initialize(): Promise<void> {
         // 初期化時にAngle表示を非表示にする
-        const angleDisplay = this.container.querySelector('#angle-display');
+        const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
         if (angleDisplay) {
             angleDisplay.style.display = 'none';
         }
@@ -185,7 +222,7 @@ class TurntableViewer {
             console.log('TurntableViewer initialized successfully');
 
             // 初期化成功時は位置調整後にAngle表示を表示
-            const angleDisplay = this.container.querySelector('#angle-display');
+            const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
             if (angleDisplay) {
                 // まず位置を調整
                 this.adjustAngleDisplayPosition();
@@ -206,7 +243,7 @@ class TurntableViewer {
     /**
      * リロードボタンを作成
      */
-    createReloadButton() {
+    createReloadButton(): void {
         this.reloadButton = document.createElement('button');
         this.reloadButton.className = 'reload-button';
         this.reloadButton.title = 'ビデオを再読み込み';
@@ -231,7 +268,7 @@ class TurntableViewer {
     /**
      * リロードボタンを表示
      */
-    showReloadButton() {
+    showReloadButton(): void {
         if (this.reloadButton) {
             this.reloadButton.style.display = 'flex';
         }
@@ -240,7 +277,7 @@ class TurntableViewer {
     /**
      * リロードボタンを非表示
      */
-    hideReloadButton() {
+    hideReloadButton(): void {
         if (this.reloadButton) {
             this.reloadButton.style.display = 'none';
         }
@@ -249,7 +286,7 @@ class TurntableViewer {
     /**
      * リロード処理
      */
-    async handleReload() {
+    async handleReload(): Promise<void> {
         if (this.isReloading) return;
 
         this.isReloading = true;
@@ -259,20 +296,27 @@ class TurntableViewer {
             console.log('Reloading turntable viewer...');
 
             // 現在のプレイヤーを破棄
-            if (this.player) {
+            if (this.state.player) {
                 try {
-                    this.player.destroy();
+                    this.state.player.destroy();
                 } catch (e) {
                     console.warn('Error destroying player:', e);
                 }
-                this.player = null;
+                this.state.player = null;
             }
 
             // 状態をリセット
             this.state = {
-                isReady: false,
+                player: null,
+                duration: 0,
+                isPlayerReady: false,
                 isDragging: false,
-                currentTime: 0
+                startTime: 0,
+                dragStartX: 0,
+                lastDragUpdate: 0,
+                pendingApiCall: null,
+                lastDisplayedAngle: 0,
+                isPreloaded: false
             };
 
             // ローディングタイムアウトをリセット
@@ -292,7 +336,7 @@ class TurntableViewer {
     /**
      * 表示サイズに応じた動画品質選択
      */
-    selectVideoQuality() {
+    selectVideoQuality(): string {
         // サイズ取得の優先順位:
         // 1. video属性で指定されたサイズ
         // 2. HTMLのwidth/height属性
@@ -350,7 +394,7 @@ class TurntableViewer {
     /**
      * 動画URLを構築
      */
-    buildVideoUrl() {
+    buildVideoUrl(): string {
         const quality = this.selectVideoQuality();
 
         // サイズ情報を取得
@@ -413,7 +457,7 @@ class TurntableViewer {
     /**
      * Vimeo oEmbed APIから動画情報を事前取得
      */
-    async getVideoInfoFromAPI() {
+    async getVideoInfoFromAPI(): Promise<VideoInfo> {
         try {
             // セキュリティ: videoIdの再検証
             if (!/^\d+$/.test(this.config.videoId)) {
@@ -489,7 +533,7 @@ class TurntableViewer {
             };
         }
     }
-    async setInitialSizeFromAPI() {
+    async setInitialSizeFromAPI(): Promise<void> {
         try {
             // 指定された幅・高さを取得
             const currentWidth = parseInt(this.iframe.getAttribute('width')) || 0;
@@ -570,7 +614,7 @@ class TurntableViewer {
     /**
      * 初期サイズを設定（フォールバック版）
      */
-    setInitialSizeFallback() {
+    setInitialSizeFallback(): void {
         try {
             const currentWidth = parseInt(this.iframe.getAttribute('width')) || 0;
             const currentHeight = parseInt(this.iframe.getAttribute('height')) || 0;
@@ -612,7 +656,7 @@ class TurntableViewer {
     /**
      * 動画のアスペクト比を調整（プレイヤー情報から詳細確認）
      */
-    async adjustVideoAspectRatio() {
+    async adjustVideoAspectRatio(): Promise<void> {
         try {
             // 動画の自然なサイズを取得
             const videoWidth = await this.state.player.getVideoWidth();
@@ -648,7 +692,7 @@ class TurntableViewer {
     /**
      * ローディングオーバーレイのサイズをiframe要素に合わせて調整
      */
-    adjustLoadingOverlaySize() {
+    adjustLoadingOverlaySize(): void {
         if (!this.loadingOverlay || !this.iframe) return;
 
         // iframeの実際のサイズ（属性値）を取得
@@ -673,7 +717,7 @@ class TurntableViewer {
     /**
      * 動画プレイヤーのセットアップ
      */
-    setupVideoPlayer() {
+    setupVideoPlayer(): void {
         const videoUrl = this.buildVideoUrl();
         this.iframe.src = videoUrl;
     }
@@ -681,7 +725,7 @@ class TurntableViewer {
     /**
      * Vimeoプレイヤー初期化
      */
-    async initializePlayer() {
+    async initializePlayer(): Promise<void> {
         try {
             // 初期サイズを設定（API情報から実際のアスペクト比を取得）
             await this.setInitialSizeFromAPI();
@@ -693,6 +737,7 @@ class TurntableViewer {
 
             // プレイヤーを作成（エラーハンドリング強化）
             try {
+                // @ts-ignore - VimeoはグローバルにCDNから読み込まれている
                 this.state.player = new Vimeo.Player(this.iframe);
                 this.updateProgress(40, 'Connecting to player...');
             } catch (error) {
@@ -785,7 +830,7 @@ class TurntableViewer {
     /**
      * 動画の事前ロード
      */
-    async preloadVideo() {
+    async preloadVideo(): Promise<void> {
         try {
             console.log('Starting video preload...');
 
@@ -824,7 +869,7 @@ class TurntableViewer {
     /**
      * プログレスバーの更新
      */
-    updateProgress(percentage, text = null) {
+    updateProgress(percentage: number, text: string | null = null): void {
         console.log(`Progress update: ${percentage}% - ${text || 'No text'}`);
 
         if (this.progressFill) {
@@ -851,7 +896,7 @@ class TurntableViewer {
     /**
      * ローディングタイムアウトをチェック
      */
-    checkLoadingTimeout(percentage) {
+    checkLoadingTimeout(percentage: number): void {
         // 初回またはリセット時にタイマー開始
         if (!this.loadingStartTime) {
             this.loadingStartTime = Date.now();
@@ -892,10 +937,10 @@ class TurntableViewer {
     /**
      * ローディングオーバーレイを表示
      */
-    showLoadingOverlay() {
+    showLoadingOverlay(): void {
         if (this.loadingOverlay) {
             // ローディング中はAngle表示を即座に非表示
-            const angleDisplay = this.container.querySelector('#angle-display');
+            const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
             if (angleDisplay) {
                 angleDisplay.style.display = 'none';
             }
@@ -913,7 +958,7 @@ class TurntableViewer {
     /**
      * ローディングオーバーレイを隠す
      */
-    hideLoadingOverlay() {
+    hideLoadingOverlay(): void {
         if (this.loadingOverlay) {
             setTimeout(() => {
                 this.loadingOverlay.classList.add('hidden');
@@ -924,7 +969,7 @@ class TurntableViewer {
                 }
 
                 // 位置調整後にAngle表示を再表示
-                const angleDisplay = this.container.querySelector('#angle-display');
+                const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
                 if (angleDisplay) {
                     angleDisplay.style.display = 'block';
                     console.log('Angle display made visible after loading and position adjustment');
@@ -941,7 +986,7 @@ class TurntableViewer {
     /**
      * 角度表示の位置を動画内に確実に配置（下中央）
      */
-    adjustAngleDisplayPosition() {
+    adjustAngleDisplayPosition(): void {
         // angle-display要素が存在しない場合は何もしない
         if (!this.angleDisplay || !this.iframe) {
             console.log('angleDisplay or iframe not found, skipping position adjustment');
@@ -969,7 +1014,7 @@ class TurntableViewer {
     /**
      * 角度表示更新
      */
-    updateAngle(seconds) {
+    updateAngle(seconds: number): void {
         let angle;
 
         if (this.config.isClockwise) {
@@ -1005,7 +1050,7 @@ class TurntableViewer {
     /**
      * 新しい再生時間を計算（ループ対応）
      */
-    calculateNewTime(deltaX) {
+    calculateNewTime(deltaX: number): number {
         // スムーズな操作のため、感度調整係数を最適化
         const sensitivityFactor = 0.9; // 感度を少し上げてレスポンシブに
 
@@ -1027,7 +1072,7 @@ class TurntableViewer {
     /**
      * ドラッグ操作の共通処理
      */
-    handleDragMove(currentX) {
+    handleDragMove(currentX: number): void {
         // より厳密な状態チェック
         if (!this.state.isDragging || !this.state.isPlayerReady) return;
 
@@ -1081,7 +1126,7 @@ class TurntableViewer {
     /**
      * ドラッグ開始の共通処理
      */
-    async handleDragStart(startX) {
+    async handleDragStart(startX: number): Promise<boolean> {
         if (!this.state.isPlayerReady) return false;
 
         // ドラッグ開始前に状態をリセット
@@ -1119,7 +1164,7 @@ class TurntableViewer {
     /**
      * ドラッグ終了の共通処理
      */
-    handleDragEnd() {
+    handleDragEnd(): void {
         if (!this.state.isDragging) return;
 
         this.state.isDragging = false;
@@ -1141,16 +1186,16 @@ class TurntableViewer {
     /**
      * イベントリスナーの追加
      */
-    attachEventListeners() {
-        this.dragOverlay.addEventListener('mousedown', this.onMouseDown);
-        this.dragOverlay.addEventListener('touchstart', this.onTouchStart, { passive: false });
-        window.addEventListener('resize', this.onWindowResize);
+    attachEventListeners(): void {
+        this.dragOverlay.addEventListener('mousedown', (e) => this.onMouseDown(e));
+        this.dragOverlay.addEventListener('touchstart', (e) => this.onTouchStart(e), { passive: false });
+        window.addEventListener('resize', this.debounce(() => this.onWindowResize(), this.config.RESIZE_DEBOUNCE_MS));
     }
 
     /**
      * マウスダウンイベントハンドラー
      */
-    async onMouseDown(e) {
+    async onMouseDown(e: MouseEvent) {
         // 既にドラッグ中の場合は無視
         if (this.state.isDragging) return;
 
@@ -1166,14 +1211,14 @@ class TurntableViewer {
     /**
      * マウスムーブイベントハンドラー
      */
-    onMouseMove(e) {
+    onMouseMove(e: MouseEvent): void {
         this.handleDragMove(e.clientX);
     }
 
     /**
      * マウスアップイベントハンドラー
      */
-    onMouseUp() {
+    onMouseUp(): void {
         this.handleDragEnd();
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
@@ -1182,7 +1227,7 @@ class TurntableViewer {
     /**
      * タッチスタートイベントハンドラー
      */
-    async onTouchStart(e) {
+    async onTouchStart(e: TouchEvent): Promise<void> {
         // 既にドラッグ中の場合は無視
         if (this.state.isDragging) return;
 
@@ -1201,7 +1246,7 @@ class TurntableViewer {
     /**
      * タッチムーブイベントハンドラー
      */
-    onTouchMove(e) {
+    onTouchMove(e: TouchEvent): void {
         // スクロールを完全に防止
         e.preventDefault();
         e.stopPropagation();
@@ -1212,7 +1257,7 @@ class TurntableViewer {
     /**
      * タッチエンドイベントハンドラー
      */
-    onTouchEnd(e) {
+    onTouchEnd(e: TouchEvent): void {
         e.preventDefault();
         e.stopPropagation();
 
@@ -1224,7 +1269,7 @@ class TurntableViewer {
     /**
      * ウィンドウリサイズイベントハンドラー
      */
-    async onWindowResize() {
+    async onWindowResize(): Promise<void> {
         const newQuality = this.selectVideoQuality();
         const currentSrc = this.iframe.src;
 
@@ -1244,9 +1289,9 @@ class TurntableViewer {
     /**
      * ユーティリティ: デバウンス関数
      */
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
+    debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+        let timeout: ReturnType<typeof setTimeout> | undefined;
+        return function executedFunction(...args: Parameters<T>) {
             const later = () => {
                 clearTimeout(timeout);
                 func(...args);
@@ -1259,26 +1304,26 @@ class TurntableViewer {
     /**
      * ユーティリティ: 遅延関数
      */
-    delay(ms) {
+    delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /**
      * ユーティリティ: タイムアウト付きPromise実行
      */
-    withTimeout(promise, timeoutMs, errorMessage) {
+    withTimeout<T = any>(promise: Promise<T>, timeoutMs: number, errorMessage: string): Promise<T> {
         return Promise.race([
             promise,
             new Promise((_, reject) =>
                 setTimeout(() => reject(new Error(errorMessage || 'Operation timed out')), timeoutMs)
             )
-        ]);
+        ]) as Promise<T>;
     }
 
     /**
      * プレイヤー設定を個別にエラーハンドリング付きで適用
      */
-    async applyPlayerSettings() {
+    async applyPlayerSettings(): Promise<void> {
         const settings = [
             {
                 name: 'loop',
@@ -1294,10 +1339,10 @@ class TurntableViewer {
 
         for (const setting of settings) {
             try {
-                await this.withTimeout(setting.action(), 3000, `Failed to set ${setting.name}`);
+                await this.withTimeout<any>(setting.action(), 3000, `Failed to set ${setting.name}`);
                 console.log(`Successfully set ${setting.name}`);
             } catch (error) {
-                console.warn(`Setting ${setting.name} failed:`, error.message);
+                console.warn(`Setting ${setting.name} failed:`, getErrorMessage(error));
                 setting.fallback();
             }
         }
@@ -1306,7 +1351,7 @@ class TurntableViewer {
     /**
      * 初期プレイヤー状態の設定
      */
-    async setInitialPlayerState() {
+    async setInitialPlayerState(): Promise<void> {
         const actions = [
             { name: 'play', action: () => this.state.player.play() },
             { name: 'pause', action: () => this.state.player.pause() },
@@ -1315,10 +1360,10 @@ class TurntableViewer {
 
         for (const action of actions) {
             try {
-                await this.withTimeout(action.action(), 3000, `Failed to ${action.name}`);
+                await this.withTimeout<any>(action.action(), 3000, `Failed to ${action.name}`);
                 console.log(`Successfully executed: ${action.name}`);
             } catch (error) {
-                console.warn(`Action ${action.name} failed:`, error.message);
+                console.warn(`Action ${action.name} failed:`, getErrorMessage(error));
                 // 個別の失敗は許容（致命的ではない）
             }
         }
@@ -1327,10 +1372,10 @@ class TurntableViewer {
     /**
      * Vimeoリンクを表示
      */
-    showVimeoLink() {
+    showVimeoLink(): void {
         // ラッパー内またはドキュメント全体からVimeoリンクを検索
-        const vimeoLink = this.container.parentNode.querySelector('.vimeo-link') ||
-            this.container.querySelector('.vimeo-link');
+        const vimeoLink = (this.container.parentNode?.querySelector('.vimeo-link') ||
+            this.container.querySelector('.vimeo-link')) as HTMLAnchorElement;
         if (vimeoLink && this.config.videoId) {
             // セキュリティ: videoIdの再検証（URL生成前）
             if (!/^\d+$/.test(this.config.videoId)) {
@@ -1360,7 +1405,7 @@ class TurntableViewer {
     /**
      * エラー表示（ローディングオーバーレイを使用）
      */
-    showError(title, message) {
+    showError(title: string, message: string): void {
         if (!this.loadingOverlay) return;
 
         // ローディングオーバーレイをエラー表示に変更
@@ -1381,7 +1426,7 @@ class TurntableViewer {
     /**
      * クリーンアップ
      */
-    destroy() {
+    destroy(): void {
         this.dragOverlay.removeEventListener('mousedown', this.onMouseDown);
         this.dragOverlay.removeEventListener('touchstart', this.onTouchStart);
         window.addEventListener('resize', this.onWindowResize);
@@ -1400,7 +1445,7 @@ if (!window.turntableViewerInstances) {
 }
 
 // 初期化関数
-function initializeTurntableViewers() {
+function initializeTurntableViewers(): void {
     // vimeo-video-id属性を持つ全てのコンテナを検索
     const containers = document.querySelectorAll('[vimeo-video-id]');
 

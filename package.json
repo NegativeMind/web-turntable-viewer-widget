@@ -17,7 +17,7 @@
     ],
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "tsc && vite build",
         "preview": "vite preview",
         "test": "vite build && vite preview"
     },
@@ -36,6 +36,8 @@
         "url": "https://github.com/NegativeMind/web-turntable-viewer-widget.git"
     },
     "devDependencies": {
+        "@types/node": "^22.10.2",
+        "typescript": "^5.7.2",
         "vite": "^5.4.11"
     },
     "peerDependencies": {

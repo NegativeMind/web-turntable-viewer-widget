@@ -1,11 +1,14 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig({
     // ライブラリモードでビルド
     build: {
         lib: {
-            entry: resolve(__dirname, 'src/turntable-viewer.js'),
+            entry: resolve(__dirname, 'src/turntable-viewer.ts'),
             name: 'TurntableViewer',
             formats: ['es', 'umd'],
             fileName: (format) => {
@@ -43,6 +46,6 @@ export default defineConfig({
     // プレビューサーバー設定
     preview: {
         port: 3000,
-        open: '/tests/test.html'
+        open: '/embed-generator/index.html'
     }
 });
