@@ -36,7 +36,7 @@ export default defineConfig({
                 },
                 assetFileNames: (assetInfo) => {
                     if (assetInfo.name === 'style.css') return 'turntable-viewer.css';
-                    return assetInfo.name;
+                    return assetInfo.name || 'asset';
                 }
             }
         },
