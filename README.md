@@ -104,7 +104,8 @@ web-turntable-viewer-widget/
 │   └── turntable-viewer.css # スタイルシート
 ├── dist/                     # ビルド出力先（CDN配信用）
 ├── tests/                    # テストページ
-├── docs/                     # 埋め込みコード作成ツール
+├── docs/                     # 埋め込みコード作成ツール（GitHub Pages用）
+├── embed-generator/          # 埋め込みコード作成ツール（開発環境用）
 ├── vite.config.js           # Vite設定ファイル
 ├── package.json             # プロジェクト設定
 └── README.md
@@ -116,6 +117,28 @@ web-turntable-viewer-widget/
 - `npm run build` - ウィジェットをビルド（dist/フォルダに出力）
 - `npm run preview` - ビルド結果をプレビュー
 - `npm run test` - ビルド＆プレビュー
+
+### GitHub Pagesでの公開
+
+このプロジェクトは、埋め込みコード作成ツールをGitHub Pagesで公開できるように構成されています。
+
+#### 公開手順
+
+1. GitHubリポジトリの設定ページに移動
+2. **Settings** → **Pages** を開く
+3. **Source** で「Deploy from a branch」を選択
+4. **Branch** で `main` (または `master`) と `/docs` を選択
+5. **Save** をクリック
+
+数分後、埋め込みコード作成ツールが以下のURLで公開されます：
+```
+https://[username].github.io/[repository-name]/
+```
+
+#### フォルダの使い分け
+
+- **docs/**: GitHub Pages用の本番環境（CDNからウィジェットを読み込み）
+- **embed-generator/**: 開発環境用（ローカルのソースコードを使用）
 
 ## 利用上の注意
 

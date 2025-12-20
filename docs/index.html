@@ -17,22 +17,20 @@
     <meta name="description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
     <meta name="keywords"
         content="Vimeo, 360度, ターンテーブル, インタラクティブ, ウィジェット, 埋め込みコード, JavaScript, オープンソース, ドラッグ操作, 回転, プレビュー, Webライブラリ">
-
-    <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# website: http://ogp.me/ns/websaite#">
-        <meta property="og:url" content="https://negativemind.com/web-turntable-viewer-widget/" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Web Turntable Viewer Widget" />
-        <meta property="og:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。" />
-        <meta property="og:site_name" content="Web Turntable Viewer Widget" />
-        <meta property="og:image" content="https://negativemind.com/images/icon.png" />
-        <meta name="twitter:card" content="summary" />
-        <meta name="twitter:title" content="Web Turntable Viewer Widget">
-        <meta name="twitter:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
-        <meta name="twitter:image:src" content="https://negativemind.com/images/icon.png">
-        <meta name="twitter:site" content="@NegativeMind" />
-        <title>Web Turntable Viewer Widget - 埋め込みコード作成</title>
-        <link rel="stylesheet" href="style.css">
-    </head>
+    <meta property="og:url" content="https://negativemind.com/web-turntable-viewer-widget/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Web Turntable Viewer Widget" />
+    <meta property="og:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。" />
+    <meta property="og:site_name" content="Web Turntable Viewer Widget" />
+    <meta property="og:image" content="https://negativemind.com/images/icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Web Turntable Viewer Widget">
+    <meta name="twitter:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
+    <meta name="twitter:image:src" content="https://negativemind.com/images/icon.png">
+    <meta name="twitter:site" content="@NegativeMind" />
+    <title>Web Turntable Viewer Widget - 埋め込みコード作成</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 
 <body>
     <!-- Google Tag Manager (noscript) -->
@@ -103,6 +101,16 @@
         </div>
     </div>
 
+    <!-- Vimeo Player API -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <!-- Turntable Viewer Widget (CDN) -->
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.4-beta/dist/turntable-viewer.css">
+    <script
+        src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.4-beta/dist/turntable-viewer.js"></script>
+
+    <!-- 埋め込みコード生成スクリプト -->
     <script src="script.js"></script>
 </body>
 
