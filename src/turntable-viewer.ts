@@ -204,6 +204,16 @@ class TurntableViewer {
                 this.dragHandler = null;
             }
 
+            // iframe情報をプレイヤー破棄前に保存（destroy が iframe を削除する可能性があるため）
+            if (!this.iframe || !this.iframe.parentElement) {
+                console.error('iframe or parent element not found, cannot reload');
+                throw new Error('Cannot reload: iframe element not properly initialized');
+            }
+
+            const parent = this.iframe.parentElement;
+            const oldId = this.iframe.id;
+            const oldClassName = this.iframe.className;
+
             // プレイヤーを破棄
             if (this.state.player) {
                 try {
@@ -215,12 +225,31 @@ class TurntableViewer {
                 this.state.player = null;
             }
 
-            // iframeのsrcをクリアして完全にリセット
-            const oldSrc = this.iframe.src;
-            this.iframe.src = 'about:blank';
-            console.log('iframe src cleared');
+            // 古いiframeを削除（既に destroy で削除されている可能性があるため確認）
+            if (this.iframe.parentElement) {
+                this.iframe.remove();
+                console.log('Old iframe removed');
+            } else {
+                console.log('iframe already removed by player.destroy()');
+            }
 
-            // 少し待機してブラウザがクリーンアップするのを待つ
+            // 新しいiframe要素を作成
+            const newIframe = document.createElement('iframe');
+            newIframe.id = oldId;
+            newIframe.className = oldClassName;
+            newIframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+            newIframe.setAttribute('loading', 'lazy');
+
+            // 新しいiframeを挿入
+            parent.appendChild(newIframe);
+            this.iframe = newIframe;
+            console.log('iframe element recreated');
+
+            // マネージャークラスのiframe参照を更新
+            this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
+            this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
+
+            // 少し待機してブラウザがDOMを更新するのを待つ
             await delay(300);
 
             // 状態をリセット
@@ -271,7 +300,7 @@ class TurntableViewer {
 
             // iframeが新しいURLをロードするまで待機（リロード時は長めに）
             if (this.isReloading) {
-                await delay(1500);
+                await delay(2000);
                 console.log('Extended delay for reload');
             } else {
                 await delay(this.config.PLAYER_LOAD_DELAY_MS);
@@ -282,13 +311,19 @@ class TurntableViewer {
                 this.progressManager.updateProgress(progress, message);
             });
 
-            // iframeが完全にロードされるまで待機
-            await delay(this.config.PLAYER_LOAD_DELAY_MS);
+            // プレイヤーが完全にロードされるまで待機（リロード時はさらに長めに）
+            if (this.isReloading) {
+                await delay(2000);
+                console.log('Extended player load delay for reload');
+            } else {
+                await delay(this.config.PLAYER_LOAD_DELAY_MS);
+            }
             this.progressManager.updateProgress(60, 'Loading player settings...');
 
             // プレイヤーの基本情報取得
             this.state.duration = await this.playerInitializer.getPlayerDuration(
                 this.state.player,
+                this.isReloading,
                 (progress, message) => this.progressManager.updateProgress(progress, message)
             );
 

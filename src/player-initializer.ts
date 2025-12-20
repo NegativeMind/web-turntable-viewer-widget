@@ -30,12 +30,14 @@ export class PlayerInitializer {
     /**
      * プレイヤーの基本情報取得
      */
-    async getPlayerDuration(player: any, onProgress?: (progress: number, message: string) => void): Promise<number> {
+    async getPlayerDuration(player: any, isReloading: boolean = false, onProgress?: (progress: number, message: string) => void): Promise<number> {
         onProgress?.(60, 'Loading player settings...');
 
+        // リロード時はタイムアウトを長くする
+        const timeout = isReloading ? 15000 : 10000;
         const duration = await withTimeout(
             player.getDuration(),
-            8000,
+            timeout,
             'Failed to get video duration'
         );
         console.log('Duration:', duration);
