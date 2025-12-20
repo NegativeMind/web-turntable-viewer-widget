@@ -1,6 +1,7 @@
 // CSSをインポート
 import './turntable-viewer.css';
 import type { TurntableConfig, TurntableState, VideoInfo } from './types';
+import { ProgressManager } from './progress-manager';
 
 // エラー処理ヘルパー関数
 function getErrorMessage(error: unknown): string {
@@ -18,17 +19,11 @@ class TurntableViewer {
     private angleEl: HTMLElement | null;
     private angleDisplay: HTMLElement | null;
     private dragOverlay: HTMLElement;
-    private loadingOverlay: HTMLElement;
-    private loadingText: HTMLElement;
-    private progressFill: HTMLElement;
-    private progressText: HTMLElement;
     private reloadButton: HTMLButtonElement;
     private config: TurntableConfig;
     private state: TurntableState;
     private isReloading: boolean = false;
-    private loadingStartTime: number | null = null;
-    private lastProgressTime: number = 0;
-    private lastProgressPercentage: number = 0;
+    private progressManager: ProgressManager;
 
     constructor(containerId: string) {
         // DOM要素の取得
@@ -63,10 +58,15 @@ class TurntableViewer {
             throw new Error('Required loading elements not found in container');
         }
 
-        this.loadingOverlay = loadingOverlay;
-        this.loadingText = loadingText;
-        this.progressFill = progressFill;
-        this.progressText = progressText;
+        // ProgressManagerを初期化
+        this.progressManager = new ProgressManager(
+            this.container,
+            this.iframe,
+            loadingOverlay,
+            loadingText,
+            progressFill,
+            progressText
+        );
 
         // リロードボタンを作成・追加
         this.reloadButton = document.createElement('button');
@@ -76,15 +76,15 @@ class TurntableViewer {
         console.log('DOM elements check:');
         console.log('- container:', !!this.container);
         console.log('- iframe:', !!this.iframe);
-        console.log('- loadingOverlay:', !!this.loadingOverlay);
-        console.log('- progressFill:', !!this.progressFill);
-        console.log('- progressText:', !!this.progressText);
-        console.log('- loadingText:', !!this.loadingText);
+        console.log('- loadingOverlay:', !!loadingOverlay);
+        console.log('- progressFill:', !!progressFill);
+        console.log('- progressText:', !!progressText);
+        console.log('- loadingText:', !!loadingText);
         console.log('- angleEl (optional):', !!this.angleEl);
         console.log('- angleDisplay (optional):', !!this.angleDisplay);
 
         // 必須要素のチェック（angle要素はオプション）
-        if (!this.container || !this.iframe || !this.loadingOverlay) {
+        if (!this.container || !this.iframe || !loadingOverlay) {
             throw new Error('Required elements not found: container, iframe, or loading-overlay');
         }
 
@@ -226,7 +226,7 @@ class TurntableViewer {
         }
 
         // ローディングオーバーレイを表示
-        this.showLoadingOverlay();
+        this.progressManager.showLoadingOverlay();
 
         try {
             await this.initializePlayer();
@@ -246,7 +246,7 @@ class TurntableViewer {
             // リロードボタンは常に表示（非表示にしない）
         } catch (error) {
             console.error('TurntableViewer initialization failed:', error);
-            this.updateProgress(100, '初期化エラーが発生しました');
+            this.progressManager.updateProgress(100, '初期化エラーが発生しました');
             this.hideLoadingOverlay();
             // エラー時もリロードボタンは常に表示
         }
@@ -332,7 +332,7 @@ class TurntableViewer {
             };
 
             // ローディングタイムアウトをリセット
-            this.loadingStartTime = null;
+            this.progressManager.resetTimeout();
 
             // 初期化をやり直し
             await this.initialize();
@@ -563,13 +563,13 @@ class TurntableViewer {
                 console.log('Container and iframe ready with fixed size');
 
                 // サイズが確定したのでローディングオーバーレイのサイズも調整
-                this.adjustLoadingOverlaySize();
+                this.progressManager.adjustLoadingOverlaySize();
                 return;
             }
 
             // widthまたはheightのどちらか一方のみ指定の場合はAPI情報でアスペクト比を取得
             if (currentWidth || currentHeight) {
-                this.updateProgress(5, 'Getting video information...');
+                this.progressManager.updateProgress(5, 'Getting video information...');
 
                 const videoInfo = await this.getVideoInfoFromAPI();
 
@@ -592,11 +592,11 @@ class TurntableViewer {
                 console.log('Container and iframe size ready, made visible');
 
                 // サイズ計算が完了したのでローディングオーバーレイのサイズも調整
-                this.adjustLoadingOverlaySize();
+                this.progressManager.adjustLoadingOverlaySize();
             } else {
                 // width・heightのどちらも指定されていない場合はデフォルト値を使用
                 const defaultWidth = 480;
-                this.updateProgress(5, 'Getting video information...');
+                this.progressManager.updateProgress(5, 'Getting video information...');
 
                 const videoInfo = await this.getVideoInfoFromAPI();
                 const calculatedHeight = Math.round(defaultWidth * videoInfo.aspectRatio);
@@ -611,7 +611,7 @@ class TurntableViewer {
                 console.log('Container and iframe size ready with default size');
 
                 // デフォルトサイズが設定されたのでローディングオーバーレイのサイズも調整
-                this.adjustLoadingOverlaySize();
+                this.progressManager.adjustLoadingOverlaySize();
             }
 
             // 全体の処理が完了したことを確認
@@ -659,7 +659,7 @@ class TurntableViewer {
             this.iframe.classList.add('size-ready');
             console.log('Container and iframe size ready (fallback), made visible');
 
-            this.adjustLoadingOverlaySize();
+            this.progressManager.adjustLoadingOverlaySize();
         } catch (error) {
             console.warn('Could not set fallback initial size:', error);
         }
@@ -699,39 +699,14 @@ class TurntableViewer {
                 console.log(`Fine-tuned iframe size: ${currentWidth}x${calculatedHeight} (aspect ratio: ${aspectRatio.toFixed(3)})`);
 
                 // ローディングオーバーレイのサイズも調整
-                this.adjustLoadingOverlaySize();
+                this.progressManager.adjustLoadingOverlaySize();
             } else {
                 console.log('Aspect ratio already correct, no adjustment needed');
             }
         } catch (error) {
             console.warn('Could not get video dimensions, keeping current size:', getErrorMessage(error));
             // エラーの場合は現在のサイズを維持
-            this.adjustLoadingOverlaySize();
-        }
-    }
-
-    /**
-     * ローディングオーバーレイのサイズをiframe要素に合わせて調整
-     */
-    adjustLoadingOverlaySize(): void {
-        if (!this.loadingOverlay || !this.iframe) return;
-
-        // iframeの実際のサイズ（属性値）を取得
-        const iframeWidth = parseInt(this.iframe.getAttribute('width'));
-        const iframeHeight = parseInt(this.iframe.getAttribute('height'));
-
-        // どちらも設定されている場合はそのまま使用
-        if (iframeWidth && iframeHeight) {
-            this.loadingOverlay.style.width = `${iframeWidth}px`;
-            this.loadingOverlay.style.height = `${iframeHeight}px`;
-            console.log(`Adjusted loading overlay size: ${iframeWidth}x${iframeHeight}`);
-        } else {
-            // サイズが未確定の場合はデフォルト値を使用
-            const defaultWidth = 480;
-            const defaultHeight = Math.round(defaultWidth * (9 / 16));
-            this.loadingOverlay.style.width = `${defaultWidth}px`;
-            this.loadingOverlay.style.height = `${defaultHeight}px`;
-            console.log(`Adjusted loading overlay size to default: ${defaultWidth}x${defaultHeight}`);
+            this.progressManager.adjustLoadingOverlaySize();
         }
     }
 
@@ -754,20 +729,20 @@ class TurntableViewer {
             // 適切な動画を選択してiframeを設定
             this.setupVideoPlayer();
 
-            this.updateProgress(20, 'Creating player...');
+            this.progressManager.updateProgress(20, 'Creating player...');
 
             // プレイヤーを作成（エラーハンドリング強化）
             try {
                 // @ts-ignore - VimeoはグローバルにCDNから読み込まれている
                 this.state.player = new Vimeo.Player(this.iframe);
-                this.updateProgress(40, 'Connecting to player...');
+                this.progressManager.updateProgress(40, 'Connecting to player...');
             } catch (error) {
                 throw new Error(`Failed to create Vimeo player: ${getErrorMessage(error)}`);
             }
 
             // iframeがロードされるまで待機
             await this.delay(this.config.PLAYER_LOAD_DELAY_MS);
-            this.updateProgress(60, 'Loading player settings...');
+            this.progressManager.updateProgress(60, 'Loading player settings...');
 
             // プレイヤーの基本情報取得（タイムアウト付き）
             try {
@@ -789,12 +764,12 @@ class TurntableViewer {
                 console.warn('Could not adjust video aspect ratio:', getErrorMessage(error));
             }
 
-            this.updateProgress(75, 'Applying player settings...');
+            this.progressManager.updateProgress(75, 'Applying player settings...');
 
             // プレイヤー設定を並列実行（個別エラーハンドリング）
             await this.applyPlayerSettings();
 
-            this.updateProgress(85, 'Preloading video...');
+            this.progressManager.updateProgress(85, 'Preloading video...');
 
             // 動画の事前ロード（バッファリング改善）
             try {
@@ -803,7 +778,7 @@ class TurntableViewer {
                 console.warn('Video preloading failed:', getErrorMessage(error));
             }
 
-            this.updateProgress(90, 'Setting initial state...');
+            this.progressManager.updateProgress(90, 'Setting initial state...');
 
             // 初期状態設定（個別エラーハンドリング）
             try {
@@ -819,7 +794,7 @@ class TurntableViewer {
             console.log('Player ready');
 
             // プログレス完了
-            this.updateProgress(100, 'Initialization complete!');
+            this.progressManager.updateProgress(100, 'Initialization complete!');
 
             // 少し遅延してからローディングオーバーレイを隠す
             setTimeout(() => {
@@ -862,7 +837,7 @@ class TurntableViewer {
             await this.state.player.pause();
 
             // プログレス更新
-            this.updateProgress(87, 'Buffering video...');
+            this.progressManager.updateProgress(87, 'Buffering video...');
 
             // 軽量なバッファリング（時間短縮）
             const preloadPoints = [0, 0.5]; // ポイントを削減
@@ -873,7 +848,7 @@ class TurntableViewer {
                 await this.delay(300); // 各ポイントでのバッファリング時間を短縮
 
                 // プログレス更新
-                this.updateProgress(87 + (i + 1) * 1, `Buffering ${Math.round(point * 100)}%...`);
+                this.progressManager.updateProgress(87 + (i + 1) * 1, `Buffering ${Math.round(point * 100)}%...`);
             }
 
             // 最初に戻す
@@ -889,120 +864,18 @@ class TurntableViewer {
     }
 
     /**
-     * プログレスバーの更新
+     * ローディングオーバーレイを隠す（angle display調整とVimeoリンク表示を含む）
      */
-    updateProgress(percentage: number, text: string | null = null): void {
-        console.log(`Progress update: ${percentage}% - ${text || 'No text'}`);
+    private hideLoadingOverlay(): void {
+        this.progressManager.hideLoadingOverlay();
 
-        if (this.progressFill) {
-            this.progressFill.style.width = `${percentage}%`;
-            console.log(`Progress fill updated to ${percentage}%`);
-        } else {
-            console.warn('Progress fill element not found');
+        // 先に角度表示の位置を調整（存在する場合のみ）
+        if (this.angleDisplay) {
+            this.adjustAngleDisplayPosition();
         }
 
-        if (this.progressText) {
-            this.progressText.textContent = `${Math.round(percentage)}%`;
-        } else {
-            console.warn('Progress text element not found');
-        }
-
-        if (text && this.loadingText) {
-            this.loadingText.textContent = text;
-        }
-
-        // ローディングタイムアウト監視
-        this.checkLoadingTimeout(percentage);
-    }
-
-    /**
-     * ローディングタイムアウトをチェック
-     */
-    checkLoadingTimeout(percentage: number): void {
-        // 初回またはリセット時にタイマー開始
-        if (!this.loadingStartTime) {
-            this.loadingStartTime = Date.now();
-            this.lastProgressTime = Date.now();
-            this.lastProgressPercentage = percentage;
-            return;
-        }
-
-        const now = Date.now();
-        const totalLoadingTime = now - this.loadingStartTime;
-        const timeSinceLastProgress = now - this.lastProgressTime;
-
-        // プログレスが進んだ場合は時間を更新
-        if (percentage > this.lastProgressPercentage) {
-            this.lastProgressTime = now;
-            this.lastProgressPercentage = percentage;
-            return;
-        }
-
-        // 30秒間プログレスが進んでいない場合、または総ローディング時間が60秒を超えた場合
-        const STALLED_TIMEOUT = 30000; // 30秒
-        const TOTAL_TIMEOUT = 60000;   // 60秒
-
-        if (timeSinceLastProgress > STALLED_TIMEOUT || totalLoadingTime > TOTAL_TIMEOUT) {
-            console.warn(`Loading timeout detected. Stalled: ${timeSinceLastProgress}ms, Total: ${totalLoadingTime}ms`);
-
-            // ローディングが停止していることを示す
-            if (this.loadingText) {
-                this.loadingText.textContent = 'ローディングが停止しました - リロードボタンを押してください';
-                this.loadingText.style.color = '#ff6b6b';
-            }
-
-            // タイムアウト検出をリセット（重複表示を防ぐ）
-            this.loadingStartTime = null;
-        }
-    }
-
-    /**
-     * ローディングオーバーレイを表示
-     */
-    showLoadingOverlay(): void {
-        if (this.loadingOverlay) {
-            // ローディング中はAngle表示を即座に非表示
-            const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
-            if (angleDisplay) {
-                angleDisplay.style.display = 'none';
-            }
-
-            this.loadingOverlay.classList.remove('hidden');
-            this.updateProgress(0, 'Initializing video player...');
-
-            // ローディングオーバーレイのサイズを即座に調整
-            this.adjustLoadingOverlaySize();
-            // 念のため少し遅延しても再調整
-            setTimeout(() => this.adjustLoadingOverlaySize(), 10);
-        }
-    }
-
-    /**
-     * ローディングオーバーレイを隠す
-     */
-    hideLoadingOverlay(): void {
-        if (this.loadingOverlay) {
-            setTimeout(() => {
-                this.loadingOverlay.classList.add('hidden');
-
-                // 先に角度表示の位置を調整（存在する場合のみ）
-                if (this.angleDisplay) {
-                    this.adjustAngleDisplayPosition();
-                }
-
-                // 位置調整後にAngle表示を再表示
-                const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
-                if (angleDisplay) {
-                    angleDisplay.style.display = 'block';
-                    console.log('Angle display made visible after loading and position adjustment');
-                } else {
-                    console.log('Angle display element not found (optional element)');
-                }
-
-                // Vimeoリンクを表示（存在する場合のみ）
-                this.showVimeoLink();
-            }, 500); // 少し遅延してスムーズに非表示
-        }
+        // Vimeoリンクを表示（存在する場合のみ）
+        this.showVimeoLink();
     }
 
     /**
@@ -1428,21 +1301,7 @@ class TurntableViewer {
      * エラー表示（ローディングオーバーレイを使用）
      */
     showError(title: string, message: string): void {
-        if (!this.loadingOverlay) return;
-
-        // ローディングオーバーレイをエラー表示に変更
-        this.loadingOverlay.innerHTML = `
-                <div class="loading-content">
-                    <div class="loading-text" style="color: #ff6b6b;">${title}</div>
-                    <div style="color: #ffa8a8; font-size: 11px; margin-top: 8px; line-height: 1.4;">
-                        ${message}
-                    </div>
-                </div>
-            `;
-        this.loadingOverlay.style.display = 'flex';
-        this.loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-
-        console.error(`${title}: ${message}`);
+        this.progressManager.showError(title, message);
     }
 
     /**
