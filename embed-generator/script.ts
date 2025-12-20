@@ -129,7 +129,7 @@ class EmbedGenerator {
 
         // 既存のターンテーブルインスタンスをクリア（プレビュー用のみ）
         if (window.turntableViewerInstances) {
-            const instancesToRemove = [];
+            const instancesToRemove: string[] = [];
             window.turntableViewerInstances.forEach(id => {
                 if (id.startsWith('preview-turntable-')) {
                     instancesToRemove.push(id);
