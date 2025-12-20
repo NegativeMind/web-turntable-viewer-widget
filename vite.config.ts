@@ -8,6 +8,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const buildMode = process.env.BUILD_MODE || 'lib';
 
 export default defineConfig({
+    base: buildMode === 'docs' ? '/web-turntable-viewer-widget/' : '/',
     build: buildMode === 'docs' ? {
         // 埋め込みツールページのビルド（embed-generator/ → docs/）
         rollupOptions: {
