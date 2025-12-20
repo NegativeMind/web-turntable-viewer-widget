@@ -1,0 +1,39 @@
+name: Create Release with Widget Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build widget library
+        run: npm run build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/turntable-viewer.js
+            dist/turntable-viewer.umd.cjs
+            dist/turntable-viewer.css
+          generate_release_notes: true
+          draft: false
+          prerelease: false

@@ -2,23 +2,35 @@
 import '../src/turntable-viewer.ts';
 
 class EmbedGenerator {
+    private form: HTMLFormElement;
+    private vimeoUrl: HTMLInputElement;
+    private videoWidth: HTMLInputElement;
+    private rotationDirection: HTMLSelectElement;
+    private generateBtn: HTMLButtonElement;
+    private previewSection: HTMLElement;
+    private codeSection: HTMLElement;
+    private previewArea: HTMLElement;
+    private codeContent: HTMLElement;
+    private copyBtn: HTMLButtonElement;
+    private urlError: HTMLElement;
+
     constructor() {
-        this.form = document.getElementById('generatorForm');
-        this.vimeoUrl = document.getElementById('vimeoUrl');
-        this.videoWidth = document.getElementById('videoWidth');
-        this.rotationDirection = document.getElementById('rotationDirection');
-        this.generateBtn = document.getElementById('generateBtn');
-        this.previewSection = document.getElementById('previewSection');
-        this.codeSection = document.getElementById('codeSection');
-        this.previewArea = document.getElementById('previewArea');
-        this.codeContent = document.getElementById('codeContent');
-        this.copyBtn = document.getElementById('copyBtn');
-        this.urlError = document.getElementById('urlError');
+        this.form = document.getElementById('generatorForm') as HTMLFormElement;
+        this.vimeoUrl = document.getElementById('vimeoUrl') as HTMLInputElement;
+        this.videoWidth = document.getElementById('videoWidth') as HTMLInputElement;
+        this.rotationDirection = document.getElementById('rotationDirection') as HTMLSelectElement;
+        this.generateBtn = document.getElementById('generateBtn') as HTMLButtonElement;
+        this.previewSection = document.getElementById('previewSection') as HTMLElement;
+        this.codeSection = document.getElementById('codeSection') as HTMLElement;
+        this.previewArea = document.getElementById('previewArea') as HTMLElement;
+        this.codeContent = document.getElementById('codeContent') as HTMLElement;
+        this.copyBtn = document.getElementById('copyBtn') as HTMLButtonElement;
+        this.urlError = document.getElementById('urlError') as HTMLElement;
 
         this.bindEvents();
     }
 
-    bindEvents() {
+    bindEvents(): void {
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
             this.generateEmbed();
@@ -29,7 +41,7 @@ class EmbedGenerator {
         });
     }
 
-    extractVideoId(url) {
+    extractVideoId(url: string): string | null {
         const patterns = [
             /vimeo\.com\/(\d+)/,
             /player\.vimeo\.com\/video\/(\d+)/
@@ -44,7 +56,7 @@ class EmbedGenerator {
         return null;
     }
 
-    generateEmbed() {
+    generateEmbed(): void {
         let url = this.vimeoUrl.value.trim();
         const width = parseInt(this.videoWidth.value) || 480;
         const isClockwise = this.rotationDirection.value === 'clockwise';
@@ -76,7 +88,7 @@ class EmbedGenerator {
         this.showCode(embedCode);
     }
 
-    createEmbedCode(videoId, width, isClockwise) {
+    createEmbedCode(videoId: string, width: number, isClockwise: boolean): string {
         const clockwiseAttr = isClockwise ? 'clockwise-rotation' : 'clockwise-rotation="false"';
 
         const embedCode = [
@@ -106,12 +118,12 @@ class EmbedGenerator {
         return embedCode.join('\\n').trim();
     }
 
-    showError(message) {
+    showError(message: string): void {
         this.urlError.textContent = message;
         this.urlError.style.display = 'block';
     }
 
-    showPreview(videoId, width, isClockwise) {
+    showPreview(videoId: string, width: number, isClockwise: boolean): void {
         // プレビューエリアをクリア
         this.previewArea.innerHTML = '';
 
@@ -172,21 +184,23 @@ class EmbedGenerator {
         this.previewSection.style.display = 'block';
     }
 
-    showCode(embedCode) {
+    showCode(embedCode: string): void {
         // 前後の空白行を完全に除去
         const cleanedCode = embedCode.trim();
 
         // プレーンテキストを保存（コピー用）
-        this.plainCode = cleanedCode;
+        const plainCode = cleanedCode;
 
-        this.codeContent.textContent = cleanedCode;
+        this.codeContent.textContent = plainCode;
+        this.codeContent.dataset.plainCode = plainCode;
         this.codeSection.style.display = 'block';
     }
 
-    async copyCode() {
+    async copyCode(): Promise<void> {
         try {
             // プレーンテキストをコピー
-            await navigator.clipboard.writeText(this.plainCode || this.codeContent.textContent);
+            const textToCopy = this.codeContent.dataset.plainCode || this.codeContent.textContent || '';
+            await navigator.clipboard.writeText(textToCopy);
             this.copyBtn.textContent = 'コピー完了!';
             this.copyBtn.classList.add('copy-success');
 
@@ -197,7 +211,8 @@ class EmbedGenerator {
         } catch (err) {
             // フォールバック
             const textArea = document.createElement('textarea');
-            textArea.value = this.plainCode || this.codeContent.textContent;
+            const textToCopy = this.codeContent.dataset.plainCode || this.codeContent.textContent || '';
+            textArea.value = textToCopy;
             document.body.appendChild(textArea);
             textArea.select();
             document.execCommand('copy');
