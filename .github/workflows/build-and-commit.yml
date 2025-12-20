@@ -37,7 +37,7 @@ jobs:
       - name: Check if dist changed
         id: check_changes
         run: |
-          git add dist/
+          git add -f dist/
           if git diff --staged --quiet; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
