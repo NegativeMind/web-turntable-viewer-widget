@@ -213,6 +213,8 @@ class TurntableViewer {
             const parent = this.iframe.parentElement;
             const oldId = this.iframe.id;
             const oldClassName = this.iframe.className;
+            const oldWidth = this.iframe.getAttribute('width') || '';
+            const oldHeight = this.iframe.getAttribute('height') || '';
 
             // プレイヤーを破棄
             if (this.state.player) {
@@ -240,10 +242,14 @@ class TurntableViewer {
             newIframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
             newIframe.setAttribute('loading', 'lazy');
 
+            // サイズ属性を即座に設定してリサイズを防ぐ
+            if (oldWidth) newIframe.setAttribute('width', oldWidth);
+            if (oldHeight) newIframe.setAttribute('height', oldHeight);
+
             // 新しいiframeを挿入
             parent.appendChild(newIframe);
             this.iframe = newIframe;
-            console.log('iframe element recreated');
+            console.log('iframe element recreated with size:', oldWidth, 'x', oldHeight);
 
             // マネージャークラスのiframe参照を更新
             this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
