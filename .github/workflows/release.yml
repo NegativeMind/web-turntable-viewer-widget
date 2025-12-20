@@ -36,4 +36,4 @@ jobs:
             dist/turntable-viewer.css
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
