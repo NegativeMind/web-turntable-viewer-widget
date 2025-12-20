@@ -1,4 +1,4 @@
-// ウィジェットをインポート（開発環境用）
+// ウィジェットを直接import
 import '../src/turntable-viewer.ts';
 
 class EmbedGenerator {
@@ -115,9 +115,8 @@ class EmbedGenerator {
         // プレビューエリアをクリア
         this.previewArea.innerHTML = '';
 
-        // 既存のターンテーブルインスタンスをクリア
+        // 既存のターンテーブルインスタンスをクリア（プレビュー用のみ）
         if (window.turntableViewerInstances) {
-            // プレビューのインスタンスのみをクリア
             const instancesToRemove = [];
             window.turntableViewerInstances.forEach(id => {
                 if (id.startsWith('preview-turntable-')) {
@@ -159,11 +158,11 @@ class EmbedGenerator {
         // ターンテーブルを初期化
         setTimeout(() => {
             try {
-                if (window.TurntableViewer) {
+                if (window.TurntableViewer && window.Vimeo) {
                     new window.TurntableViewer(containerId);
                     console.log('プレビュー用ターンテーブル初期化完了:', containerId);
                 } else {
-                    console.error('TurntableViewer が利用できません');
+                    console.error('TurntableViewer または Vimeo Player API が利用できません');
                 }
             } catch (error) {
                 console.error('プレビュー初期化エラー:', error);
@@ -213,4 +212,6 @@ class EmbedGenerator {
 }
 
 // 初期化
-new EmbedGenerator();
+document.addEventListener('DOMContentLoaded', () => {
+    new EmbedGenerator();
+});

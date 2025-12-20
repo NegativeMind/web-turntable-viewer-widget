@@ -127,20 +127,37 @@ web-turntable-viewer-widget/
 #### 公開手順
 
 1. GitHubリポジトリの設定ページに移動
-2. **Settings** → **Pages** を開く
-3. **Source** で「Deploy from a branch」を選択
-4. **Branch** で `main` (または `master`) と `/docs` を選択
-5. **Save** をクリック
+## デプロイ
+
+### GitHub Pagesへの自動デプロイ
+
+このプロジェクトはGitHub Actionsによる自動デプロイに対応しています。
+
+#### 初回設定
+
+1. GitHubリポジトリの **Settings** → **Pages** を開く
+2. **Source** で「**GitHub Actions**」を選択
+3. `main`ブランチにpushすると自動的にビルド＆デプロイされます
 
 数分後、埋め込みコード作成ツールが以下のURLで公開されます：
 ```
 https://[username].github.io/[repository-name]/
 ```
 
+#### 手動デプロイ
+
+ローカルでビルドして確認する場合：
+```bash
+npm run build:docs    # 埋め込みツールをビルド
+npm run preview:docs  # ローカルでプレビュー
+```
+
 #### フォルダの使い分け
 
-- **docs/**: GitHub Pages用の本番環境（CDNからウィジェットを読み込み）
-- **embed-generator/**: 開発環境用（ローカルのソースコードを使用）
+- **embed-generator/**: 埋め込みツールの**ソースコード**（こちらを編集）
+- **docs/**: ビルド成果物（自動生成、git管理外）
+- **src/**: ウィジェットライブラリのソースコード
+- **dist/**: ウィジェットライブラリのビルド成果物
 
 ## 利用上の注意
 

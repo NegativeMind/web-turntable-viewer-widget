@@ -18,7 +18,9 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
+        "build:docs": "cross-env BUILD_MODE=docs vite build && node scripts/move-docs.js",
         "preview": "vite preview",
+        "preview:docs": "vite preview --outDir docs",
         "test": "vite build && vite preview"
     },
     "keywords": [
@@ -37,6 +39,7 @@
     },
     "devDependencies": {
         "@types/node": "^22.10.2",
+        "cross-env": "^10.1.0",
         "typescript": "^5.7.2",
         "vite": "^5.4.11"
     },

@@ -28,8 +28,10 @@
     <meta name="twitter:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
     <meta name="twitter:image:src" content="https://negativemind.com/images/icon.png">
     <meta name="twitter:site" content="@NegativeMind" />
-    <title>Web Turntable Viewer Widget - 埋め込みコード作成</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Web Turntable Viewer Widget - 埋め込みコード作成</title> <!-- Vimeo Player APIをCDNから読み込み -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
+  <script type="module" crossorigin src="/assets/index-LKmx2s6_.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CkWIX4O_.css">
 </head>
 
 <body>
@@ -101,17 +103,7 @@
         </div>
     </div>
 
-    <!-- Vimeo Player API -->
-    <script src="https://player.vimeo.com/api/player.js"></script>
-
-    <!-- Turntable Viewer Widget (CDN) -->
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.4-beta/dist/turntable-viewer.css">
-    <script
-        src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.4-beta/dist/turntable-viewer.js"></script>
-
-    <!-- 埋め込みコード生成スクリプト -->
-    <script src="script.js"></script>
+    <!-- 埋め込みコード生成スクリプト -->
 </body>
 
 </html>

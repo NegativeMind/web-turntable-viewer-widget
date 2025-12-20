@@ -2,14 +2,42 @@
 <html lang="ja">
 
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-5V22PS7');</script>
+    <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
+    <meta name="keywords"
+        content="Vimeo, 360度, ターンテーブル, インタラクティブ, ウィジェット, 埋め込みコード, JavaScript, オープンソース, ドラッグ操作, 回転, プレビュー, Webライブラリ">
+    <meta property="og:url" content="https://negativemind.com/web-turntable-viewer-widget/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Web Turntable Viewer Widget" />
+    <meta property="og:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。" />
+    <meta property="og:site_name" content="Web Turntable Viewer Widget" />
+    <meta property="og:image" content="https://negativemind.com/images/icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Web Turntable Viewer Widget">
+    <meta name="twitter:description" content="Vimeoの360度ターンテーブル動画をドラッグ操作でインタラクティブに回転表示できるWebウィジェットの埋め込みコード作成ツール。">
+    <meta name="twitter:image:src" content="https://negativemind.com/images/icon.png">
+    <meta name="twitter:site" content="@NegativeMind" />
     <title>Web Turntable Viewer Widget - 埋め込みコード作成</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css"> <!-- Vimeo Player APIをCDNから読み込み -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
 </head>
 
 <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5V22PS7" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="header">
         <div class="header-content">
             <h1>Web Turntable Viewer Widget</h1>
@@ -73,9 +101,6 @@
             <pre><code id="codeContent"></code></pre>
         </div>
     </div>
-
-    <!-- Vimeo Player API -->
-    <script src="https://player.vimeo.com/api/player.js"></script>
 
     <!-- 埋め込みコード生成スクリプト -->
     <script type="module" src="./script.js"></script>
