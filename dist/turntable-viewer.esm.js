@@ -1,4 +1,4 @@
-class M {
+class E {
   constructor(e, t, i, a, s, o) {
     this.loadingStartTime = null, this.lastProgressTime = 0, this.lastProgressPercentage = 0, this.container = e, this.iframe = t, this.loadingOverlay = i, this.loadingText = a, this.progressFill = s, this.progressText = o;
   }
@@ -366,7 +366,7 @@ class v {
       }
   }
 }
-class E {
+class M {
   constructor(e, t, i, a, s, o) {
     this.container = e, this.dragOverlay = t, this.state = i, this.config = a, this.calculatePixelsPerRotation = s, this.onAngleUpdate = o, this.boundMouseDown = this.onMouseDown.bind(this), this.boundMouseMove = this.onMouseMove.bind(this), this.boundMouseUp = this.onMouseUp.bind(this), this.boundTouchStart = this.onTouchStart.bind(this), this.boundTouchMove = this.onTouchMove.bind(this), this.boundTouchEnd = this.onTouchEnd.bind(this);
   }
@@ -581,7 +581,7 @@ class b {
     const n = this.container.querySelector(".loading-overlay"), r = this.container.querySelector(".loading-text"), g = this.container.querySelector(".progress-fill"), c = this.container.querySelector(".progress-text");
     if (!n || !r || !g || !c)
       throw new Error("Required loading elements not found in container");
-    if (this.progressManager = new M(
+    if (this.progressManager = new E(
       this.container,
       this.iframe,
       n,
@@ -716,7 +716,7 @@ class b {
     } catch (e) {
       console.error("Player initialization failed:", e);
       const t = u(e);
-      t.includes("Failed to create Vimeo player") ? this.showError("プレイヤーエラー", "ビデオプレイヤーを作成できませんでした。接続を確認してリロードしてください。") : t.includes("Video not found") ? this.showError("ビデオが見つかりません", "指定されたビデオが見つかりませんでした。ビデオIDを確認してください。") : t.includes("Access denied") ? this.showError("アクセス拒否", "このビデオは非公開または制限されています。ビデオの権限を確認してください。") : t.includes("Failed to get video duration") ? this.showError("ビデオ情報の取得に失敗", "ビデオの長さを取得できませんでした。ネットワーク接続を確認してリロードしてください。") : this.showError("初期化エラー", `ビデオプレイヤーの読み込みに失敗しました。<br><br>エラー: ${t}<br><br>リロードボタンを押して再試行してください。`), this.videoConfigManager.setInitialSizeFallback(() => {
+      t.includes("Failed to create Vimeo player") ? this.showError("Player Error", "Failed to create player. Check connection and reload.") : t.includes("Video not found") ? this.showError("Video Not Found", "The specified video was not found. Check the video ID.") : t.includes("Access denied") ? this.showError("Access Denied", "This video is private or restricted.") : t.includes("Failed to get video duration") ? this.showError("Failed to Load", "Could not retrieve video duration. Check network and reload.") : this.showError("Initialization Error", `Failed to load video player.<br><br>Error: ${t}<br><br>Click reload to retry.`), this.videoConfigManager.setInitialSizeFallback(() => {
         this.progressManager.adjustLoadingOverlaySize();
       }), console.log("Error state maintained, loading overlay not hidden");
     }
@@ -725,7 +725,7 @@ class b {
    * イベントリスナーの追加
    */
   attachEventListeners() {
-    this.dragHandler = new E(
+    this.dragHandler = new M(
       this.container,
       this.dragOverlay,
       this.state,
