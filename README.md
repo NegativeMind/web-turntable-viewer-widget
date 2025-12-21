@@ -11,7 +11,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 </a>
 </h1>
 
-埋め込みコード作成ページは[こちら](https://negativemind.com/web-turntable-viewer-widget/)
+[埋め込みコード作成ツール](https://negativemind.com/web-turntable-viewer-widget/)を用意しています。
 
 開発の経緯については[こちら](https://blog.negativemind.com/portfolio/web-turntable-viewer-widget/)
 
