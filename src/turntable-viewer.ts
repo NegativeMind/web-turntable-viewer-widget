@@ -375,15 +375,15 @@ class TurntableViewer {
 
             const errorMessage = getErrorMessage(error);
             if (errorMessage.includes('Failed to create Vimeo player')) {
-                this.showError('プレイヤーエラー', 'ビデオプレイヤーを作成できませんでした。接続を確認してリロードしてください。');
+                this.showError('Player Error', 'Failed to create player. Check connection and reload.');
             } else if (errorMessage.includes('Video not found')) {
-                this.showError('ビデオが見つかりません', '指定されたビデオが見つかりませんでした。ビデオIDを確認してください。');
+                this.showError('Video Not Found', 'The specified video was not found. Check the video ID.');
             } else if (errorMessage.includes('Access denied')) {
-                this.showError('アクセス拒否', 'このビデオは非公開または制限されています。ビデオの権限を確認してください。');
+                this.showError('Access Denied', 'This video is private or restricted.');
             } else if (errorMessage.includes('Failed to get video duration')) {
-                this.showError('ビデオ情報の取得に失敗', 'ビデオの長さを取得できませんでした。ネットワーク接続を確認してリロードしてください。');
+                this.showError('Failed to Load', 'Could not retrieve video duration. Check network and reload.');
             } else {
-                this.showError('初期化エラー', `ビデオプレイヤーの読み込みに失敗しました。<br><br>エラー: ${errorMessage}<br><br>リロードボタンを押して再試行してください。`);
+                this.showError('Initialization Error', `Failed to load video player.<br><br>Error: ${errorMessage}<br><br>Click reload to retry.`);
             }
 
             this.videoConfigManager.setInitialSizeFallback(() => {
