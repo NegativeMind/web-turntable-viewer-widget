@@ -29,7 +29,9 @@
     <meta name="twitter:image:src" content="https://negativemind.com/images/icon.png">
     <meta name="twitter:site" content="@NegativeMind" />
     <title>Web Turntable Viewer Widget - 埋め込みコード作成</title>
-    <link rel="stylesheet" href="style.css"> <!-- Vimeo Player APIをCDNから読み込み -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <!-- Vimeo Player APIをCDNから読み込み -->
     <script src="https://player.vimeo.com/api/player.js"></script>
 </head>
 
@@ -58,7 +60,7 @@
             <span class="help-desc">
                 <a href="https://vimeo.com/"
                     target="_blank">Vimeo</a>にアップロードした360度1回転のターンテーブル動画のURLを入力し、「埋め込みコードを作成」ボタンを押してください。
-                コードをWebサイトに貼り付けるだけで、インタラクティブなターンテーブルビューアを埋め込むことができます。
+                作成されたコードをWebサイトに貼り付けるだけで、インタラクティブなターンテーブルビューアを埋め込むことができます。
             </span>
         </div>
 
@@ -101,6 +103,16 @@
             <pre><code id="codeContent"></code></pre>
         </div>
     </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-author">Created by <a href="https://twitter.com/NegativeMind"
+                    target="_blank">@NegativeMind</a>
+                (<a href="https://negativemind.com/" target="_blank">Profile</a>,
+                <a href="https://blog.negativemind.com/" target="_blank">Blog</a>)
+            </p>
+        </div>
+    </footer>
 
     <!-- 埋め込みコード生成スクリプト -->
     <script type="module" src="./script.ts"></script>
