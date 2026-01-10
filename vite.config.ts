@@ -20,7 +20,7 @@ export default defineConfig({
     } : {
         // ライブラリモードでビルド（src/ → dist/）
         lib: {
-            entry: resolve(__dirname, 'src/turntable-viewer.ts'),
+            entry: resolve(__dirname, 'src/index.ts'),
             name: 'TurntableViewer',
             formats: ['es', 'umd'],
             fileName: (format) => {

@@ -33,24 +33,9 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/dist/turntable-viewer.css">
-<div class="turntable-wrapper">
-    <div vimeo-video-id="1118303126" clockwise-rotation>
-        <iframe width="480" frameborder="0" allowfullscreen></iframe>
-        <div class="drag-overlay"></div>
-        <div class="loading-overlay">
-            <div class="loading-content">
-                <div class="loading-text">Loading turntable...</div>
-                <div class="progress-container">
-                    <div class="progress-bar"><div class="progress-fill"></div></div>
-                    <div class="progress-text">0%</div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
-</div>
-<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/dist/turntable-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.7-beta/dist/turntable-viewer.js"></script>
+
+<turntable-viewer vimeo-video-id="1118303126" width="480"></turntable-viewer>
 ```
 
 ### 設定オプション
@@ -58,21 +43,35 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 | 属性 | 必須 | 値 | 説明 |
 |------|------|-----|------|
 | `vimeo-video-id` | ✅ | 数値 | Vimeoの動画ID |
-| `clockwise-rotation` | ❌ | ブール値 | ターンテーブルの回転方向<br><br>時計回り(デフォルト)：`clockwise-rotation` または `clockwise-rotation="true"` または `clockwise-rotation="1"`:<br>反時計回り：`clockwise-rotation="false"` または `clockwise-rotation="0"` |
+| `width` | ❌ | 数値 (px) | ウィジェットの幅（デフォルト: 480） |
+| `height` | ❌ | 数値 (px) | ウィジェットの高さ（未指定時はアスペクト比で自動計算） |
+| `clockwise-rotation` | ❌ | `true` / `false` | ターンテーブルの回転方向<br><br>**時計回り(デフォルト)**：属性なし<br>**時計回り(明示)**：`clockwise-rotation="true"`<br>**反時計回り**：`clockwise-rotation="false"` |
+| `show-angle` | ❌ | - | 回転角度の表示（デバッグ用）<br><br>指定すると画面下部に現在の角度が表示されます |
 
 #### 埋め込みサイズ設定
 
 ウィジェットの動画サイズは、iframeの`width`または`height`属性のどちらかで指定してください。指定されなかった方の寸法は動画のアスペクト比に基づいて自動的に計算されます。
 
+#### 使用例
+
 ```html
-<!-- 幅を指定(高さは動画のアスペクト比で自動計算) -->
-<iframe width="480" frameborder="0" allowfullscreen></iframe>
+<!-- 基本的な使い方（幅480px、時計回り） -->
+<turntable-viewer vimeo-video-id="1118303126" width="480"></turntable-viewer>
 
-<!-- 高さを指定(幅は動画のアスペクト比で自動計算) -->
-<iframe height="300" frameborder="0" allowfullscreen></iframe>
+<!-- 時計回りを明示的に指定 -->
+<turntable-viewer vimeo-video-id="1118303126" width="480" clockwise-rotation="true"></turntable-viewer>
 
-<!-- 両方指定も可能(動画のアスペクト比は無視される) -->
-<iframe width="640" height="480" frameborder="0" allowfullscreen></iframe>
+<!-- 反時計回り -->
+<turntable-viewer vimeo-video-id="1118303126" width="480" clockwise-rotation="false"></turntable-viewer>
+
+<!-- 幅のみ指定（高さは動画のアスペクト比で自動計算） -->
+<turntable-viewer vimeo-video-id="1118303126" width="640"></turntable-viewer>
+
+<!-- 幅と高さを両方指定 -->
+<turntable-viewer vimeo-video-id="1118303126" width="640" height="480"></turntable-viewer>
+
+<!-- 角度表示を有効にする（デバッグ用） -->
+<turntable-viewer vimeo-video-id="1118303126" width="480" show-angle></turntable-viewer>
 ```
 
 ## 利用上の注意

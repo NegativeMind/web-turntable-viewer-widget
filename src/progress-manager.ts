@@ -2,6 +2,8 @@
  * プログレスバー管理クラス
  * ローディングオーバーレイとプログレスバーの表示・更新・タイムアウト検知を管理
  */
+import type { TurntableConfig } from './types';
+
 export class ProgressManager {
     private loadingOverlay: HTMLElement;
     private loadingText: HTMLElement;
@@ -9,6 +11,7 @@ export class ProgressManager {
     private progressText: HTMLElement;
     private container: HTMLElement;
     private iframe: HTMLIFrameElement;
+    private config: TurntableConfig;
 
     // タイムアウト検知用
     private loadingStartTime: number | null = null;
@@ -21,13 +24,16 @@ export class ProgressManager {
         loadingOverlay: HTMLElement,
         loadingText: HTMLElement,
         progressFill: HTMLElement,
-        progressText: HTMLElement
+        progressText: HTMLElement,
+        config: TurntableConfig
     ) {
         this.container = container;
         this.iframe = iframe;
         this.loadingOverlay = loadingOverlay;
         this.loadingText = loadingText;
         this.progressFill = progressFill;
+        this.progressText = progressText;
+        this.config = config;
         this.progressText = progressText;
     }
 
@@ -87,13 +93,15 @@ export class ProgressManager {
             setTimeout(() => {
                 this.loadingOverlay.classList.add('hidden');
 
-                // Angle表示を再表示（存在する場合のみ）
-                const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
-                if (angleDisplay) {
-                    angleDisplay.style.display = 'block';
-                    console.log('Angle display made visible after loading');
-                } else {
-                    console.log('Angle display element not found (optional element)');
+                // Angle表示を再表示（show-angle属性がある場合のみ）
+                if (this.config.showAngle) {
+                    const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
+                    if (angleDisplay) {
+                        angleDisplay.style.display = 'block';
+                        console.log('Angle display made visible after loading');
+                    } else {
+                        console.log('Angle display element not found (optional element)');
+                    }
                 }
             }, 500); // 少し遅延してスムーズに非表示
         }

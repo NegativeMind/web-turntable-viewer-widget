@@ -3,7 +3,6 @@ declare global {
     interface Window {
         Vimeo: typeof Vimeo;
         TurntableViewer: any; // クラスコンストラクタの型
-        turntableViewerInstances: Set<string>;
     }
 }
 
@@ -44,11 +43,11 @@ declare namespace Vimeo {
 }
 
 export interface TurntableConfig {
-    RESIZE_DEBOUNCE_MS: number;
     PLAYER_LOAD_DELAY_MS: number;
     DRAG_THROTTLE_MS: number;
     isClockwise: boolean;
     videoId: string;
+    showAngle: boolean;
 }
 
 export interface TurntableState {
