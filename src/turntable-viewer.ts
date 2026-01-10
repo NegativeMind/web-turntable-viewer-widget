@@ -464,7 +464,7 @@ export class TurntableViewer {
     }
 }
 
-// グローバルにも公開
+// グローバルにも公開（Web Component経由で使用）
 if (typeof window !== 'undefined') {
     (window as any).TurntableViewer = TurntableViewer;
 }

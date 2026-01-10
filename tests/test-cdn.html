@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web Turntable Viewer - CDN配信テスト</title>
 
+    <!-- Vimeo Player API（Web Componentより先に読み込む） -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
+
+    <!-- Web Turntable Viewer Widget -->
+    <script type="module"
+        src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.7-beta/dist/turntable-viewer.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -98,8 +105,8 @@
     <div class="test-info">
         <h1>🧪 CDN配信テスト</h1>
         <p>このページは、jsDelivrから配信されるウィジェットコードの動作確認用です。</p>
-        <p>使用バージョン: <code>@v0.1.6-beta</code></p>
-        <p>CDN URL: <code>https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/</code></p>
+        <p>使用バージョン: <code>@v0.1.7-beta</code></p>
+        <p>CDN URL: <code>https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.7-beta/</code></p>
     </div>
 
     <div class="demo-area">
@@ -108,38 +115,17 @@
         <div class="note">
             <strong>確認項目：</strong>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li>ウィジェットが正常に読み込まれるか</li>
+                <li>Web Componentが正常に読み込まれるか</li>
+                <li>Shadow DOMによるCSS隔離が機能しているか</li>
                 <li>動画のプリロードが完了するか</li>
                 <li>ドラッグ操作で動画が回転するか</li>
-                <li>角度表示が正しく動作するか（もし表示される場合）</li>
+                <li>clockwise-rotation属性が正しく動作するか</li>
             </ul>
         </div>
 
         <div class="embed-section">
             <!-- ここから埋め込みコード -->
-            <script src="https://player.vimeo.com/api/player.js"></script>
-            <link rel="stylesheet"
-                href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/dist/turntable-viewer.css">
-            <div class="turntable-wrapper">
-                <div vimeo-video-id="1118303126" clockwise-rotation>
-                    <iframe width="480" frameborder="0" allowfullscreen></iframe>
-                    <div class="drag-overlay"></div>
-                    <div class="loading-overlay">
-                        <div class="loading-content">
-                            <div class="loading-text">Loading turntable...</div>
-                            <div class="progress-container">
-                                <div class="progress-bar">
-                                    <div class="progress-fill"></div>
-                                </div>
-                                <div class="progress-text">0%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
-            </div>
-            <script
-                src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/dist/turntable-viewer.js"></script>
+            <turntable-viewer vimeo-video-id="1118303126" width="480" clockwise-rotation="true"></turntable-viewer>
             <!-- ここまで埋め込みコード -->
         </div>
 
@@ -155,26 +141,7 @@
 
         <div class="embed-section">
             <!-- 2つ目の埋め込みコード -->
-            <link rel="stylesheet"
-                href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.6-beta/dist/turntable-viewer.css">
-            <div class="turntable-wrapper">
-                <div vimeo-video-id="1118303126" clockwise-rotation="false">
-                    <iframe width="360" frameborder="0" allowfullscreen></iframe>
-                    <div class="drag-overlay"></div>
-                    <div class="loading-overlay">
-                        <div class="loading-content">
-                            <div class="loading-text">Loading turntable...</div>
-                            <div class="progress-container">
-                                <div class="progress-bar">
-                                    <div class="progress-fill"></div>
-                                </div>
-                                <div class="progress-text">0%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
-            </div>
+            <turntable-viewer vimeo-video-id="1118303126" width="360" clockwise-rotation="false"></turntable-viewer>
             <!-- 2つ目の埋め込みコード終了 -->
         </div>
 
