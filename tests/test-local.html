@@ -4,14 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Turntable Viewer - CDN配信テスト</title>
+    <title>Web Turntable Viewer - ローカルビルドテスト</title>
 
     <!-- Vimeo Player API（Web Componentより先に読み込む） -->
     <script src="https://player.vimeo.com/api/player.js"></script>
 
-    <!-- Web Turntable Viewer Widget -->
-    <script type="module"
-        src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.8-beta/dist/turntable-viewer.js"></script>
+    <!-- Web Turntable Viewer Widget (ローカルビルド) -->
+    <script type="module" src="../dist/turntable-viewer.js"></script>
 
     <style>
         body {
@@ -23,22 +22,22 @@
         }
 
         .test-info {
-            background: #fff3cd;
+            background: #d1ecf1;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
+            border-left: 4px solid #0c5460;
         }
 
         .test-info h1 {
             margin: 0 0 10px 0;
             font-size: 1.8rem;
-            color: #333;
+            color: #0c5460;
         }
 
         .test-info p {
             margin: 5px 0;
-            color: #666;
+            color: #0c5460;
         }
 
         .test-info code {
@@ -57,7 +56,7 @@
         }
 
         .embed-section {
-            border: 2px dashed #007cba;
+            border: 2px dashed #17a2b8;
             padding: 15px;
             margin: 15px 0;
             background: #f8f9fa;
@@ -68,15 +67,16 @@
         .section-title {
             margin: 0 0 10px 0;
             font-size: 1.2rem;
-            color: #007cba;
+            color: #17a2b8;
         }
 
         .note {
-            background: #e3f2fd;
+            background: #d1ecf1;
             padding: 10px;
             border-radius: 3px;
             margin: 15px 0;
             font-size: 0.9em;
+            color: #0c5460;
         }
 
         /* レスポンシブ対応 */
@@ -103,10 +103,10 @@
 
 <body>
     <div class="test-info">
-        <h1>🧪 CDN配信テスト</h1>
-        <p>このページは、jsDelivrから配信されるウィジェットコードの動作確認用です。</p>
-        <p>使用バージョン: <code>@v0.1.8-beta</code></p>
-        <p>CDN URL: <code>https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.8-beta/</code></p>
+        <h1>🔧 ローカルビルドテスト</h1>
+        <p>このページは、ローカルでビルドされたウィジェットコードの動作確認用です。</p>
+        <p>使用ファイル: <code>../dist/turntable-viewer.js</code></p>
+        <p>バージョン: <code>v0.1.7-beta (local build)</code></p>
     </div>
 
     <div class="demo-area">
