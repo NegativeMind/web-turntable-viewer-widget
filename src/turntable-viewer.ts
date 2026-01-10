@@ -12,13 +12,14 @@ import { getErrorMessage, delay } from './utils';
  * Web Turntable Viewer
  * ドラッグ操作で360度回転表示を制御するクラス
  */
-class TurntableViewer {
+export class TurntableViewer {
     private container: HTMLElement;
     private iframe: HTMLIFrameElement;
     private dragOverlay: HTMLElement;
     private config: TurntableConfig;
     private state: TurntableState;
     private isReloading: boolean = false;
+    private root: Document | ShadowRoot;
 
     // マネージャークラス
     private progressManager: ProgressManager;
@@ -27,9 +28,10 @@ class TurntableViewer {
     private dragHandler: DragHandler | null = null;
     private uiManager: UIManager;
 
-    constructor(containerId: string) {
-        // DOM要素の取得
-        const container = document.getElementById(containerId);
+    constructor(containerId: string, root: Document | ShadowRoot = document) {
+        // DOM要素の取得（Shadow DOM対応）
+        this.root = root;
+        const container = this.root.getElementById(containerId);
         if (!container) {
             throw new Error(`Container element with id "${containerId}" not found`);
         }
@@ -461,7 +463,8 @@ if (!window.turntableViewerInstances) {
 
 // 初期化関数
 function initializeTurntableViewers(): void {
-    const containers = document.querySelectorAll('[vimeo-video-id]');
+    // カスタムエレメント（turntable-viewer）は除外
+    const containers = document.querySelectorAll('[vimeo-video-id]:not(turntable-viewer)');
 
     if (containers.length === 0) {
         console.warn('No turntable containers found. Make sure elements have vimeo-video-id attribute.');
@@ -501,10 +504,7 @@ if (document.readyState === 'loading') {
     initializeTurntableViewers();
 }
 
-// ESモジュールとしてクラスをエクスポート
-export { TurntableViewer };
-
 // グローバルにも公開(後方互換性のため)
 if (typeof window !== 'undefined') {
-    window.TurntableViewer = TurntableViewer;
+    (window as any).TurntableViewer = TurntableViewer;
 }
