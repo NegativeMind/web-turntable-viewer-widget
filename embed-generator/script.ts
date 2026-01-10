@@ -89,8 +89,8 @@ class EmbedGenerator {
     }
 
     createEmbedCode(videoId: string, width: number, isClockwise: boolean): string {
-        // 時計回りはデフォルトなので属性なし、反時計回りはclockwise-rotation="false"
-        const clockwiseAttr = isClockwise ? '' : 'clockwise-rotation="false"';
+        // 指定なし=デフォルト(時計回り)、指定時は必ずbool値を明示
+        const clockwiseAttr = isClockwise ? 'clockwise-rotation="true"' : 'clockwise-rotation="false"';
 
         const embedCode = [
             '<script src="https://player.vimeo.com/api/player.js"><' + '/script>',
@@ -112,8 +112,8 @@ class EmbedGenerator {
         this.previewArea.innerHTML = '';
 
         // Web Component方式でプレビューを表示
-        // 時計回りはデフォルトなので属性なし、反時計回りはclockwise-rotation="false"
-        const clockwiseAttr = isClockwise ? '' : 'clockwise-rotation="false"';
+        // 指定なし=デフォルト(時計回り)、指定時は必ずbool値を明示
+        const clockwiseAttr = isClockwise ? 'clockwise-rotation="true"' : 'clockwise-rotation="false"';
         const previewHTML = `<turntable-viewer vimeo-video-id="${videoId}" width="${width}" ${clockwiseAttr}></turntable-viewer>`;
 
         this.previewArea.innerHTML = previewHTML;

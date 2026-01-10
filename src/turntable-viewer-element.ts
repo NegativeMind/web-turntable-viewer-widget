@@ -47,7 +47,7 @@ export class TurntableViewerElement extends HTMLElement {
 
         // Shadow DOM内にHTMLとCSSを注入
         if (this.shadowRoot) {
-            // clockwise-rotation属性を正しく伝播
+            // clockwise-rotation属性を正しく伝播（指定時は必ずbool値が必要）
             let clockwiseAttr = '';
             if (clockwiseRotation !== null) {
                 clockwiseAttr = `clockwise-rotation="${clockwiseRotation}"`;
