@@ -5,7 +5,7 @@
 /* ホストエレメント - 外部CSSから保護 */
 :host {
     all: initial;
-    display: block !important;
+    display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
     box-sizing: border-box !important;

@@ -136,18 +136,35 @@
     </div>
 
     <div class="demo-area" style="margin-top: 20px;">
-        <h2 class="section-title">複数ウィジェットのテスト</h2>
-        <p style="font-size: 0.9em; color: #666;">同じページに複数のウィジェットを配置した場合の動作確認</p>
+        <h2 class="section-title">配置テスト（text-align）</h2>
+        <p style="font-size: 0.9em; color: #666;">display: inline-blockにより、親要素のtext-alignに従う</p>
 
-        <div class="embed-section">
-            <!-- 2つ目の埋め込みコード -->
-            <turntable-viewer vimeo-video-id="1118303126" width="360" clockwise-rotation="false"></turntable-viewer>
-            <!-- 2つ目の埋め込みコード終了 -->
+        <div class="note">
+            <strong>確認項目：</strong>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>左寄せ（デフォルト）</li>
+                <li>中央寄せ（text-align: center）</li>
+                <li>右寄せ（text-align: right）</li>
+            </ul>
         </div>
 
-        <p style="font-size: 0.85em; color: #888; margin-top: 10px;">
-            ※ 2つ目は反時計回り設定（clockwise-rotation="false"）でサイズも小さく設定
-        </p>
+        <!-- 左寄せ（デフォルト） -->
+        <div class="embed-section" style="text-align: left;">
+            <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">左寄せ（text-align: left）</p>
+            <turntable-viewer vimeo-video-id="1118303126" width="360" clockwise-rotation="true"></turntable-viewer>
+        </div>
+
+        <!-- 中央寄せ -->
+        <div class="embed-section" style="text-align: center;">
+            <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">中央寄せ（text-align: center）</p>
+            <turntable-viewer vimeo-video-id="1118303126" width="360" clockwise-rotation="true"></turntable-viewer>
+        </div>
+
+        <!-- 右寄せ -->
+        <div class="embed-section" style="text-align: right;">
+            <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">右寄せ（text-align: right）</p>
+            <turntable-viewer vimeo-video-id="1118303126" width="360" clockwise-rotation="true"></turntable-viewer>
+        </div>
     </div>
 </body>
 
