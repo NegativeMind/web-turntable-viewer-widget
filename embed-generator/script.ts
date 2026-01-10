@@ -94,7 +94,7 @@ class EmbedGenerator {
 
         const embedCode = [
             '<script src="https://player.vimeo.com/api/player.js"><' + '/script>',
-            '<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.8-beta/dist/turntable-viewer.js"><' + '/script>',
+            '<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.9-beta/dist/turntable-viewer.js"><' + '/script>',
             '<turntable-viewer vimeo-video-id="' + videoId + '" width="' + width + '" ' + clockwiseAttr + '></turntable-viewer>'
         ];
 
