@@ -168,7 +168,6 @@ export class TurntableViewer {
         }
 
         return {
-            RESIZE_DEBOUNCE_MS: 500,
             PLAYER_LOAD_DELAY_MS: 1000,
             DRAG_THROTTLE_MS: 16,
             isClockwise: isClockwise,
@@ -465,55 +464,7 @@ export class TurntableViewer {
     }
 }
 
-// グローバルな初期化済みコンテナを追跡
-if (!window.turntableViewerInstances) {
-    window.turntableViewerInstances = new Set();
-}
-
-// 初期化関数
-function initializeTurntableViewers(): void {
-    // カスタムエレメント（turntable-viewer）は除外
-    const containers = document.querySelectorAll('[vimeo-video-id]:not(turntable-viewer)');
-
-    if (containers.length === 0) {
-        console.warn('No turntable containers found. Make sure elements have vimeo-video-id attribute.');
-        return;
-    }
-
-    console.log(`Found ${containers.length} turntable container(s), checking for new instances...`);
-
-    containers.forEach((container, index) => {
-        try {
-            if (!container.id) {
-                container.id = `turntable-container-${Date.now()}-${index}`;
-                console.log(`Auto-generated ID: ${container.id}`);
-            }
-
-            if (window.turntableViewerInstances.has(container.id)) {
-                console.log(`TurntableViewer already initialized for container: ${container.id}`);
-                return;
-            }
-
-            new TurntableViewer(container.id);
-            window.turntableViewerInstances.add(container.id);
-            console.log(`TurntableViewer initialized for container: ${container.id}`);
-        } catch (error) {
-            console.error(`Failed to initialize TurntableViewer for container ${index}:`, error);
-        }
-    });
-}
-
-// DOMContentLoadedイベントで初期化
-document.addEventListener('DOMContentLoaded', initializeTurntableViewers);
-
-// スクリプトが動的に読み込まれた場合にも対応
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeTurntableViewers);
-} else {
-    initializeTurntableViewers();
-}
-
-// グローバルにも公開(後方互換性のため)
+// グローバルにも公開
 if (typeof window !== 'undefined') {
     (window as any).TurntableViewer = TurntableViewer;
 }
