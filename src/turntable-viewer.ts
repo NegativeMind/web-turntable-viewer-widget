@@ -69,7 +69,8 @@ export class TurntableViewer {
             loadingOverlay,
             loadingText,
             progressFill,
-            progressText
+            progressText,
+            this.config
         );
 
         // DOM要素の存在確認
@@ -138,18 +139,25 @@ export class TurntableViewer {
     getConfig(): TurntableConfig {
         const videoId = this.container.getAttribute('vimeo-video-id');
         const clockwiseAttr = this.container.getAttribute('clockwise-rotation');
-        let isClockwise = true;
+        let isClockwise = true; // デフォルトは時計回り
 
+        // clockwise-rotation属性が存在する場合のみチェック
         if (clockwiseAttr !== null) {
+            // 属性値が空、"true"、"1" の場合は時計回り
             if (clockwiseAttr === '' || clockwiseAttr === 'true' || clockwiseAttr === '1') {
                 isClockwise = true;
-            } else if (clockwiseAttr === 'false' || clockwiseAttr === '0') {
+            }
+            // 属性値が"false"、"0" の場合は反時計回り
+            else if (clockwiseAttr === 'false' || clockwiseAttr === '0') {
                 isClockwise = false;
-            } else {
+            }
+            // それ以外の値は無効としてデフォルトの時計回りを使用
+            else {
                 console.warn(`Invalid clockwise-rotation attribute value: "${clockwiseAttr}". Using default "true".`);
                 isClockwise = true;
             }
         }
+        // clockwise-rotation属性がない場合はデフォルトの時計回り
 
         if (!videoId) {
             throw new Error('vimeo-video-id attribute is required on the container element');
@@ -164,7 +172,8 @@ export class TurntableViewer {
             PLAYER_LOAD_DELAY_MS: 1000,
             DRAG_THROTTLE_MS: 16,
             isClockwise: isClockwise,
-            videoId: videoId
+            videoId: videoId,
+            showAngle: this.container.hasAttribute('show-angle')
         };
     }
 

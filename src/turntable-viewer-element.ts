@@ -3,7 +3,7 @@
  * カスタムエレメントとしてShadow DOMで完全に隔離されたウィジェット
  */
 
-import styles from './turntable-viewer-shadowdom.css?inline';
+import styles from './turntable-viewer.css?inline';
 import { TurntableViewer } from './turntable-viewer';
 
 export class TurntableViewerElement extends HTMLElement {
@@ -11,7 +11,7 @@ export class TurntableViewerElement extends HTMLElement {
     private shadowContainer: HTMLElement | null = null;
 
     static get observedAttributes() {
-        return ['vimeo-video-id', 'clockwise-rotation', 'width', 'height'];
+        return ['vimeo-video-id', 'clockwise-rotation', 'width', 'height', 'show-angle'];
     }
 
     constructor() {
@@ -38,6 +38,7 @@ export class TurntableViewerElement extends HTMLElement {
         const clockwiseRotation = this.getAttribute('clockwise-rotation');
         const width = this.getAttribute('width') || '480';
         const height = this.getAttribute('height') || '';
+        const showAngle = this.hasAttribute('show-angle');
 
         if (!vimeoVideoId) {
             console.error('vimeo-video-id attribute is required');
@@ -46,10 +47,17 @@ export class TurntableViewerElement extends HTMLElement {
 
         // Shadow DOM内にHTMLとCSSを注入
         if (this.shadowRoot) {
+            // clockwise-rotation属性を正しく伝播
+            let clockwiseAttr = '';
+            if (clockwiseRotation !== null) {
+                clockwiseAttr = `clockwise-rotation="${clockwiseRotation}"`;
+            }
+            // 属性がない場合は何も追加しない（デフォルトで時計回り）
+
             this.shadowRoot.innerHTML = `
                 <style>${styles}</style>
                 <div class="turntable-wrapper">
-                    <div id="turntable-container" vimeo-video-id="${vimeoVideoId}" ${clockwiseRotation !== null ? `clockwise-rotation="${clockwiseRotation}"` : 'clockwise-rotation'}>
+                    <div id="turntable-container" vimeo-video-id="${vimeoVideoId}" ${clockwiseAttr} ${showAngle ? 'show-angle' : ''}>
                         <iframe ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''} frameborder="0" allowfullscreen></iframe>
                         <div class="drag-overlay">
                             <button class="reload-button" title="Reload video">

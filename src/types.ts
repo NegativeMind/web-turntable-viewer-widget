@@ -49,6 +49,7 @@ export interface TurntableConfig {
     DRAG_THROTTLE_MS: number;
     isClockwise: boolean;
     videoId: string;
+    showAngle: boolean;
 }
 
 export interface TurntableState {

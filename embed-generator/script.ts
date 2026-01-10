@@ -1,5 +1,5 @@
-// ウィジェットを直接import
-import '../src/turntable-viewer.ts';
+// Web Componentを読み込み
+import '../src/index.ts';
 
 class EmbedGenerator {
     private form: HTMLFormElement;
@@ -89,30 +89,14 @@ class EmbedGenerator {
     }
 
     createEmbedCode(videoId: string, width: number, isClockwise: boolean): string {
-        const clockwiseAttr = isClockwise ? 'clockwise-rotation' : 'clockwise-rotation="false"';
+        // 時計回りはデフォルトなので属性なし、反時計回りはclockwise-rotation="false"
+        const clockwiseAttr = isClockwise ? '' : 'clockwise-rotation="false"';
 
         const embedCode = [
             '<script src="https://player.vimeo.com/api/player.js"><' + '/script>',
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.5-beta/dist/turntable-viewer.css">',
-            '<div class="turntable-wrapper">',
-            '  <div vimeo-video-id="' + videoId + '" ' + clockwiseAttr + '>',
-            '    <iframe width="' + width + '" frameborder="0" allowfullscreen></iframe>',
-            '    <div class="drag-overlay"></div>',
-            '    <div class="loading-overlay">',
-            '      <div class="loading-content">',
-            '        <div class="loading-text">Loading turntable...</div>',
-            '        <div class="progress-container">',
-            '          <div class="progress-bar">',
-            '            <div class="progress-fill"></div>',
-            '          </div>',
-            '          <div class="progress-text">0%</div>',
-            '        </div>',
-            '      </div>',
-            '    </div>',
-            '  </div>',
-            '  <a class="vimeo-link" href="https://vimeo.com/' + videoId + '" target="_blank">View on Vimeo</a>',
-            '</div>',
-            '<script src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.5-beta/dist/turntable-viewer.js"><' + '/script>'
+            '<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.7-beta/dist/turntable-viewer.js"><' + '/script>',
+            '',
+            '<turntable-viewer vimeo-video-id="' + videoId + '" width="' + width + '" ' + clockwiseAttr + '></turntable-viewer>'
         ];
 
         return embedCode.join('\n').trim();
@@ -127,60 +111,12 @@ class EmbedGenerator {
         // プレビューエリアをクリア
         this.previewArea.innerHTML = '';
 
-        // 既存のターンテーブルインスタンスをクリア（プレビュー用のみ）
-        if (window.turntableViewerInstances) {
-            const instancesToRemove: string[] = [];
-            window.turntableViewerInstances.forEach(id => {
-                if (id.startsWith('preview-turntable-')) {
-                    instancesToRemove.push(id);
-                }
-            });
-            instancesToRemove.forEach(id => {
-                window.turntableViewerInstances.delete(id);
-            });
-        }
-
-        // プレビュー用のHTMLを構築
-        const clockwiseAttr = isClockwise ? 'clockwise-rotation' : 'clockwise-rotation="false"';
-        const containerId = `preview-turntable-${Date.now()}`;
-
-        const previewHTML = `
-            <div class="turntable-wrapper">
-                <div id="${containerId}" vimeo-video-id="${videoId}" ${clockwiseAttr}>
-                    <iframe width="${width}" frameborder="0" allowfullscreen></iframe>
-                    <div class="drag-overlay"></div>
-                    <div class="loading-overlay">
-                        <div class="loading-content">
-                            <div class="loading-text">Loading turntable...</div>
-                            <div class="progress-container">
-                                <div class="progress-bar">
-                                    <div class="progress-fill"></div>
-                                </div>
-                                <div class="progress-text">0%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a class="vimeo-link" href="https://vimeo.com/${videoId}" target="_blank">View on Vimeo</a>
-            </div>
-        `;
+        // Web Component方式でプレビューを表示
+        // 時計回りはデフォルトなので属性なし、反時計回りはclockwise-rotation="false"
+        const clockwiseAttr = isClockwise ? '' : 'clockwise-rotation="false"';
+        const previewHTML = `<turntable-viewer vimeo-video-id="${videoId}" width="${width}" ${clockwiseAttr}></turntable-viewer>`;
 
         this.previewArea.innerHTML = previewHTML;
-
-        // ターンテーブルを初期化
-        setTimeout(() => {
-            try {
-                if (window.TurntableViewer && window.Vimeo) {
-                    new window.TurntableViewer(containerId);
-                    console.log('プレビュー用ターンテーブル初期化完了:', containerId);
-                } else {
-                    console.error('TurntableViewer または Vimeo Player API が利用できません');
-                }
-            } catch (error) {
-                console.error('プレビュー初期化エラー:', error);
-            }
-        }, 300);
-
         this.previewSection.style.display = 'block';
     }
 

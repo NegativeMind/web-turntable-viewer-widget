@@ -145,7 +145,7 @@ export class UIManager {
      * 角度表示を表示
      */
     showAngleDisplay(): void {
-        if (this.angleDisplay) {
+        if (this.angleDisplay && this.config.showAngle) {
             this.adjustAngleDisplayPosition();
             this.angleDisplay.style.display = 'block';
             console.log('Angle display enabled after successful initialization and position adjustment');
