@@ -1,4 +1,4 @@
-# Web Turntable Viewer Widget (Beta)
+# [Web Turntable Viewer Widget (Beta)](https://negativemind.com/web-turntable-viewer-widget/)
 
 > ⚠️ まだバージョン1未満のベータ版です。仕様が予告なく変更される可能性があります。
 
