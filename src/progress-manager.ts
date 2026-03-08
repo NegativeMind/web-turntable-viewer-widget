@@ -3,6 +3,12 @@
  * ローディングオーバーレイとプログレスバーの表示・更新・タイムアウト検知を管理
  */
 import type { TurntableConfig } from './types';
+import {
+    DEFAULT_VIDEO_WIDTH_PX,
+    DEFAULT_ASPECT_RATIO,
+    LOADING_STALL_TIMEOUT_MS,
+    LOADING_TOTAL_TIMEOUT_MS,
+} from './constants';
 
 export class ProgressManager {
     private loadingOverlay: HTMLElement;
@@ -124,8 +130,8 @@ export class ProgressManager {
             console.log(`Adjusted loading overlay size: ${iframeWidth}x${iframeHeight}`);
         } else {
             // サイズが未確定の場合はデフォルト値を使用
-            const defaultWidth = 480;
-            const defaultHeight = Math.round(defaultWidth * (9 / 16));
+            const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
+            const defaultHeight = Math.round(defaultWidth * DEFAULT_ASPECT_RATIO);
             this.loadingOverlay.style.width = `${defaultWidth}px`;
             this.loadingOverlay.style.height = `${defaultHeight}px`;
             console.log(`Adjusted loading overlay size to default: ${defaultWidth}x${defaultHeight}`);
@@ -156,10 +162,7 @@ export class ProgressManager {
         }
 
         // 30秒間プログレスが進んでいない場合、または総ローディング時間が60秒を超えた場合
-        const STALLED_TIMEOUT = 30000; // 30秒
-        const TOTAL_TIMEOUT = 60000;   // 60秒
-
-        if (timeSinceLastProgress > STALLED_TIMEOUT || totalLoadingTime > TOTAL_TIMEOUT) {
+        if (timeSinceLastProgress > LOADING_STALL_TIMEOUT_MS || totalLoadingTime > LOADING_TOTAL_TIMEOUT_MS) {
             console.warn(`Loading timeout detected. Stalled: ${timeSinceLastProgress}ms, Total: ${totalLoadingTime}ms`);
 
             // ローディングが停止していることを示す

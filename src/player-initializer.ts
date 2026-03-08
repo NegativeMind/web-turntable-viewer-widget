@@ -1,5 +1,13 @@
 import type { TurntableState } from './types';
 import { getErrorMessage, withTimeout, delay } from './utils';
+import {
+    PLAYER_DURATION_TIMEOUT_MS,
+    PLAYER_DURATION_RELOAD_TIMEOUT_MS,
+    PLAYER_SETTING_TIMEOUT_MS,
+    PLAYER_PRELOAD_TIMEOUT_MS,
+    PLAYER_PRELOAD_DELAY_MS,
+    PLAYER_PRELOAD_POINTS,
+} from './constants';
 
 /**
  * プレイヤー初期化と事前ロードを管理するクラス
@@ -34,7 +42,7 @@ export class PlayerInitializer {
         onProgress?.(60, 'Loading player settings...');
 
         // リロード時はタイムアウトを長くする
-        const timeout = isReloading ? 15000 : 10000;
+        const timeout = isReloading ? PLAYER_DURATION_RELOAD_TIMEOUT_MS : PLAYER_DURATION_TIMEOUT_MS;
         const duration = await withTimeout(
             player.getDuration(),
             timeout,
@@ -57,12 +65,12 @@ export class PlayerInitializer {
             console.log('Getting video dimensions...');
             const videoWidth = await withTimeout(
                 player.getVideoWidth(),
-                3000,
+                PLAYER_SETTING_TIMEOUT_MS,
                 'Failed to get video width'
             );
             const videoHeight = await withTimeout(
                 player.getVideoHeight(),
-                3000,
+                PLAYER_SETTING_TIMEOUT_MS,
                 'Failed to get video height'
             );
             const aspectRatio = videoHeight / videoWidth;
@@ -110,7 +118,7 @@ export class PlayerInitializer {
 
         for (const setting of settings) {
             try {
-                await withTimeout(setting.action(), 3000, `Failed to set ${setting.name}`);
+                await withTimeout(setting.action(), PLAYER_SETTING_TIMEOUT_MS, `Failed to set ${setting.name}`);
                 console.log(`Successfully set ${setting.name}`);
             } catch (error) {
                 console.warn(`Setting ${setting.name} failed:`, getErrorMessage(error));
@@ -128,21 +136,20 @@ export class PlayerInitializer {
             console.log('Starting video buffer preload...');
 
             // 再生せずにseekだけでバッファリング（ブラウザの自動再生ブロックを回避）
-            const preloadPoints = [0, 0.5];
-            for (let i = 0; i < preloadPoints.length; i++) {
-                const point = preloadPoints[i];
+            for (let i = 0; i < PLAYER_PRELOAD_POINTS.length; i++) {
+                const point = PLAYER_PRELOAD_POINTS[i];
                 const seekTime = duration * point;
                 await withTimeout(
                     player.setCurrentTime(seekTime),
-                    5000,
+                    PLAYER_PRELOAD_TIMEOUT_MS,
                     `Preload seek timeout at ${point * 100}%`
                 );
-                await delay(300);
+                await delay(PLAYER_PRELOAD_DELAY_MS);
 
                 onProgress?.(85 + (i + 1) * 2, `Buffering ${Math.round(point * 100)}%...`);
             }
 
-            await withTimeout(player.setCurrentTime(0), 5000, 'Preload final seek timeout');
+            await withTimeout(player.setCurrentTime(0), PLAYER_PRELOAD_TIMEOUT_MS, 'Preload final seek timeout');
 
             console.log('Video buffer preload completed');
             return true;
@@ -169,7 +176,7 @@ export class PlayerInitializer {
 
         for (const action of actions) {
             try {
-                await withTimeout(action.action(), 3000, `Failed to ${action.name}`);
+                await withTimeout(action.action(), PLAYER_SETTING_TIMEOUT_MS, `Failed to ${action.name}`);
                 console.log(`Successfully executed: ${action.name}`);
             } catch (error) {
                 if (action.optional) {

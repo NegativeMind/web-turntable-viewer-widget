@@ -7,6 +7,12 @@ import { PlayerInitializer } from './player-initializer';
 import { DragHandler } from './drag-handler';
 import { UIManager } from './ui-manager';
 import { getErrorMessage, delay } from './utils';
+import {
+    PLAYER_LOAD_DELAY_MS,
+    PLAYER_RELOAD_EXTRA_DELAY_MS,
+    PLAYER_DOM_SETTLE_DELAY_MS,
+    LOADING_OVERLAY_HIDE_DELAY_MS,
+} from './constants';
 
 /**
  * Web Turntable Viewer
@@ -20,6 +26,7 @@ export class TurntableViewer {
     private state: TurntableState;
     private isReloading: boolean = false;
     private root: Document | ShadowRoot;
+    private boundOnWindowResize: () => Promise<void>;
 
     // マネージャークラス
     private progressManager: ProgressManager;
@@ -129,6 +136,9 @@ export class TurntableViewer {
             this.handleReload.bind(this)
         );
 
+        // ウィンドウリサイズハンドラーをバインド（removeEventListener で同じ参照を使うため）
+        this.boundOnWindowResize = this.onWindowResize.bind(this);
+
         // 初期化
         this.initialize();
     }
@@ -168,7 +178,7 @@ export class TurntableViewer {
         }
 
         return {
-            PLAYER_LOAD_DELAY_MS: 1000,
+            PLAYER_LOAD_DELAY_MS: PLAYER_LOAD_DELAY_MS,
             DRAG_THROTTLE_MS: 16,
             isClockwise: isClockwise,
             videoId: videoId,
@@ -266,7 +276,7 @@ export class TurntableViewer {
             this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
 
             // 少し待機してブラウザがDOMを更新するのを待つ
-            await delay(300);
+            await delay(PLAYER_DOM_SETTLE_DELAY_MS);
 
             // 状態をリセット
             this.state = {
@@ -316,7 +326,7 @@ export class TurntableViewer {
 
             // iframeが新しいURLをロードするまで待機（リロード時は長めに）
             if (this.isReloading) {
-                await delay(2000);
+                await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
                 console.log('Extended delay for reload');
             } else {
                 await delay(this.config.PLAYER_LOAD_DELAY_MS);
@@ -329,7 +339,7 @@ export class TurntableViewer {
 
             // プレイヤーが完全にロードされるまで待機（リロード時はさらに長めに）
             if (this.isReloading) {
-                await delay(2000);
+                await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
                 console.log('Extended player load delay for reload');
             } else {
                 await delay(this.config.PLAYER_LOAD_DELAY_MS);
@@ -378,7 +388,7 @@ export class TurntableViewer {
             // ローディングオーバーレイを隠す
             setTimeout(() => {
                 this.uiManager.hideLoadingOverlay();
-            }, 500);
+            }, LOADING_OVERLAY_HIDE_DELAY_MS);
 
         } catch (error) {
             console.error('Player initialization failed:', error);
@@ -418,7 +428,7 @@ export class TurntableViewer {
         );
 
         this.dragHandler.attachEventListeners();
-        window.addEventListener('resize', this.onWindowResize.bind(this));
+        window.addEventListener('resize', this.boundOnWindowResize);
     }
 
     /**
@@ -459,7 +469,7 @@ export class TurntableViewer {
         if (this.dragHandler) {
             this.dragHandler.removeEventListeners();
         }
-        window.removeEventListener('resize', this.onWindowResize.bind(this));
+        window.removeEventListener('resize', this.boundOnWindowResize);
         console.log('TurntableViewer destroyed');
     }
 }

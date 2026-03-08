@@ -1,4 +1,5 @@
 import type { TurntableConfig, TurntableState } from './types';
+import { DRAG_SENSITIVITY_FACTOR, DRAG_EXTREME_DELTA_PX, DRAG_API_THROTTLE_MS } from './constants';
 
 /**
  * ドラッグ操作とイベント処理を管理するクラス
@@ -67,7 +68,7 @@ export class DragHandler {
      * 新しい再生時間を計算（ループ対応）
      */
     private calculateNewTime(deltaX: number): number {
-        const sensitivityFactor = 0.9;
+        const sensitivityFactor = DRAG_SENSITIVITY_FACTOR;
         const pixelsPerRotation = this.calculatePixelsPerRotation();
         const adjustedDelta = deltaX * sensitivityFactor;
         const rotationProgress = adjustedDelta / pixelsPerRotation;
@@ -92,7 +93,7 @@ export class DragHandler {
 
         const deltaX = currentX - this.state.dragStartX;
 
-        if (Math.abs(deltaX) > 2000) {
+        if (Math.abs(deltaX) > DRAG_EXTREME_DELTA_PX) {
             console.warn('Extreme deltaX detected, ignoring:', deltaX);
             return;
         }
@@ -103,7 +104,7 @@ export class DragHandler {
         this.onAngleUpdate(newTime);
 
         const now = performance.now();
-        const shouldThrottle = now - this.state.lastDragUpdate < 100;
+        const shouldThrottle = now - this.state.lastDragUpdate < DRAG_API_THROTTLE_MS;
 
         if (!shouldThrottle) {
             this.state.lastDragUpdate = now;

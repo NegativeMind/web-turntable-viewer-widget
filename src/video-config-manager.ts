@@ -1,5 +1,17 @@
 import type { TurntableConfig, VideoInfo } from './types';
 import { getErrorMessage, withTimeout, delay } from './utils';
+import {
+    PPR_BASE_PIXELS,
+    PPR_BASE_SCREEN_SIZE_PX,
+    PPR_SMALL_SCREEN_BREAKPOINT_PX,
+    PPR_SMALL_SCREEN_MULTIPLIER,
+    PPR_MIN,
+    PPR_MAX,
+    QUALITY_DPR_LIMIT,
+    MOBILE_BREAKPOINT_PX,
+    DEFAULT_VIDEO_WIDTH_PX,
+    DEFAULT_ASPECT_RATIO,
+} from './constants';
 
 /**
  * 動画設定・品質・URL構築を管理するクラス
@@ -28,16 +40,13 @@ export class VideoConfigManager {
 
         console.log(`Container width for calculation: ${finalWidth}px (html: ${htmlWidth}, container: ${containerWidth}, iframe: ${iframeWidth})`);
 
-        const basePixels = 1200;
-        const baseScreenSize = 640;
+        let pixelsPerRotation = (finalWidth / PPR_BASE_SCREEN_SIZE_PX) * PPR_BASE_PIXELS;
 
-        let pixelsPerRotation = (finalWidth / baseScreenSize) * basePixels;
-
-        if (finalWidth <= 480) {
-            pixelsPerRotation *= 1.2;
+        if (finalWidth <= PPR_SMALL_SCREEN_BREAKPOINT_PX) {
+            pixelsPerRotation *= PPR_SMALL_SCREEN_MULTIPLIER;
         }
 
-        pixelsPerRotation = Math.max(250, Math.min(3000, pixelsPerRotation));
+        pixelsPerRotation = Math.max(PPR_MIN, Math.min(PPR_MAX, pixelsPerRotation));
 
         console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(pixelsPerRotation)} for width: ${finalWidth}px`);
         return Math.round(pixelsPerRotation);
@@ -64,7 +73,7 @@ export class VideoConfigManager {
 
         let effectiveSize;
         if ((htmlWidth && htmlHeight) || (videoWidth && videoHeight)) {
-            const limitedDPR = Math.min(devicePixelRatio, 1.5);
+            const limitedDPR = Math.min(devicePixelRatio, QUALITY_DPR_LIMIT);
             effectiveSize = effectiveArea * limitedDPR;
         } else {
             effectiveSize = effectiveArea * devicePixelRatio;
@@ -106,7 +115,7 @@ export class VideoConfigManager {
         let finalHeight = videoHeight || htmlHeight || finalWidth;
 
         const screenWidth = window.innerWidth || document.documentElement.clientWidth;
-        if (screenWidth <= 768) {
+        if (screenWidth <= MOBILE_BREAKPOINT_PX) {
             const containerWidth = this.container.clientWidth || this.container.parentElement?.clientWidth || screenWidth;
             const availableWidth = Math.floor(containerWidth * 0.9);
             if (availableWidth > 200) {
@@ -118,7 +127,7 @@ export class VideoConfigManager {
         this.iframe.setAttribute('width', finalWidth.toString());
         this.iframe.setAttribute('height', finalHeight.toString());
 
-        if (screenWidth <= 768) {
+        if (screenWidth <= MOBILE_BREAKPOINT_PX) {
             this.iframe.style.width = finalWidth + 'px';
             this.iframe.style.height = finalHeight + 'px';
             this.iframe.style.maxWidth = 'none';
@@ -217,7 +226,7 @@ export class VideoConfigManager {
             return {
                 width: 1920,
                 height: 1080,
-                aspectRatio: 9 / 16,
+                aspectRatio: DEFAULT_ASPECT_RATIO,
                 title: 'Untitled Video'
             };
         }
@@ -268,7 +277,7 @@ export class VideoConfigManager {
 
                 onAdjustOverlay?.();
             } else {
-                const defaultWidth = 480;
+                const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
                 onProgress?.(5, 'Getting video information...');
 
                 const videoInfo = await this.getVideoInfoFromAPI();
@@ -304,16 +313,16 @@ export class VideoConfigManager {
             if (currentWidth && currentHeight) {
                 console.log(`Fallback: Both width and height specified: ${currentWidth}x${currentHeight}`);
             } else if (currentWidth && !currentHeight) {
-                const defaultHeight = Math.round(currentWidth * (9 / 16));
+                const defaultHeight = Math.round(currentWidth * DEFAULT_ASPECT_RATIO);
                 this.iframe.setAttribute('height', defaultHeight.toString());
                 console.log(`Fallback: Set height from width: ${currentWidth}x${defaultHeight} (16:9 default aspect ratio)`);
             } else if (currentHeight && !currentWidth) {
-                const defaultWidth = Math.round(currentHeight / (9 / 16));
+                const defaultWidth = Math.round(currentHeight / DEFAULT_ASPECT_RATIO);
                 this.iframe.setAttribute('width', defaultWidth.toString());
                 console.log(`Fallback: Set width from height: ${defaultWidth}x${currentHeight} (16:9 default aspect ratio)`);
             } else {
-                const defaultWidth = 480;
-                const defaultHeight = Math.round(defaultWidth * (9 / 16));
+                const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
+                const defaultHeight = Math.round(defaultWidth * DEFAULT_ASPECT_RATIO);
                 this.iframe.setAttribute('width', defaultWidth.toString());
                 this.iframe.setAttribute('height', defaultHeight.toString());
                 console.log(`Fallback: Set default size: ${defaultWidth}x${defaultHeight} (16:9 default aspect ratio)`);

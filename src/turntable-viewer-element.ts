@@ -27,9 +27,9 @@ export class TurntableViewerElement extends HTMLElement {
     }
 
     disconnectedCallback() {
-        // クリーンアップ処理
         if (this.viewer) {
-            // TurntableViewerにクリーンアップメソッドがあれば呼び出す
+            this.viewer.destroy();
+            this.viewer = null;
         }
     }
 
