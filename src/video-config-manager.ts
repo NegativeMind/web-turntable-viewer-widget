@@ -1,5 +1,5 @@
 import type { TurntableConfig, VideoInfo } from './types';
-import { getErrorMessage, withTimeout, delay } from './utils';
+import { getErrorMessage, delay } from './utils';
 import {
     PPR_BASE_PIXELS,
     PPR_BASE_SCREEN_SIZE_PX,
@@ -61,7 +61,6 @@ export class VideoConfigManager {
         const htmlWidth = parseInt(this.iframe.getAttribute('width') || '0');
         const htmlHeight = parseInt(this.iframe.getAttribute('height') || '0');
         const computedWidth = this.iframe.clientWidth || this.container.clientWidth || 0;
-        const computedHeight = this.iframe.clientHeight || this.container.clientHeight || 0;
 
         const finalWidth = videoWidth || htmlWidth || computedWidth || 480;
         const finalHeight = videoHeight || htmlHeight || finalWidth;
@@ -71,7 +70,7 @@ export class VideoConfigManager {
 
         const devicePixelRatio = window.devicePixelRatio || 1;
 
-        let effectiveSize;
+        let effectiveSize: number;
         if ((htmlWidth && htmlHeight) || (videoWidth && videoHeight)) {
             const limitedDPR = Math.min(devicePixelRatio, QUALITY_DPR_LIMIT);
             effectiveSize = effectiveArea * limitedDPR;
@@ -246,53 +245,33 @@ export class VideoConfigManager {
             this.iframe.style.visibility = 'hidden';
 
             if (currentWidth && currentHeight) {
+                // 両方指定済み：API不要
                 console.log(`Both width and height specified: ${currentWidth}x${currentHeight}`);
-                this.container.classList.add('initialized');
-                this.iframe.style.visibility = 'visible';
-                this.iframe.classList.add('size-ready');
-                console.log('Container and iframe ready with fixed size');
-                onAdjustOverlay?.();
+                this.applySizeToIframe(currentWidth, currentHeight, onAdjustOverlay);
                 return;
             }
 
+            onProgress?.(5, 'Getting video information...');
+            const videoInfo = await this.getVideoInfoFromAPI();
+
             if (currentWidth || currentHeight) {
-                onProgress?.(5, 'Getting video information...');
-
-                const videoInfo = await this.getVideoInfoFromAPI();
-
+                // 片方のみ指定：アスペクト比から補完
+                let finalW = currentWidth;
+                let finalH = currentHeight;
                 if (currentWidth && !currentHeight) {
-                    const calculatedHeight = Math.round(currentWidth * videoInfo.aspectRatio);
-                    this.iframe.setAttribute('height', calculatedHeight.toString());
-                    console.log(`Set height from width: ${currentWidth}x${calculatedHeight} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
-                } else if (currentHeight && !currentWidth) {
-                    const calculatedWidth = Math.round(currentHeight / videoInfo.aspectRatio);
-                    this.iframe.setAttribute('width', calculatedWidth.toString());
-                    console.log(`Set width from height: ${calculatedWidth}x${currentHeight} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
+                    finalH = Math.round(currentWidth * videoInfo.aspectRatio);
+                    console.log(`Set height from width: ${finalW}x${finalH} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
+                } else {
+                    finalW = Math.round(currentHeight / videoInfo.aspectRatio);
+                    console.log(`Set width from height: ${finalW}x${finalH} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
                 }
-
-                this.container.classList.add('initialized');
-                this.iframe.style.visibility = 'visible';
-                this.iframe.classList.add('size-ready');
-                console.log('Container and iframe size ready, made visible');
-
-                onAdjustOverlay?.();
+                this.applySizeToIframe(finalW, finalH, onAdjustOverlay);
             } else {
+                // 両方未指定：デフォルト幅 + アスペクト比
                 const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
-                onProgress?.(5, 'Getting video information...');
-
-                const videoInfo = await this.getVideoInfoFromAPI();
                 const calculatedHeight = Math.round(defaultWidth * videoInfo.aspectRatio);
-
-                this.iframe.setAttribute('width', defaultWidth.toString());
-                this.iframe.setAttribute('height', calculatedHeight.toString());
                 console.log(`Set default size: ${defaultWidth}x${calculatedHeight} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
-
-                this.container.classList.add('initialized');
-                this.iframe.style.visibility = 'visible';
-                this.iframe.classList.add('size-ready');
-                console.log('Container and iframe size ready with default size');
-
-                onAdjustOverlay?.();
+                this.applySizeToIframe(defaultWidth, calculatedHeight, onAdjustOverlay);
             }
 
             console.log('setInitialSizeFromAPI completed');
@@ -310,33 +289,44 @@ export class VideoConfigManager {
             const currentWidth = parseInt(this.iframe.getAttribute('width') || '0');
             const currentHeight = parseInt(this.iframe.getAttribute('height') || '0');
 
+            let finalW: number;
+            let finalH: number;
+
             if (currentWidth && currentHeight) {
-                console.log(`Fallback: Both width and height specified: ${currentWidth}x${currentHeight}`);
+                finalW = currentWidth;
+                finalH = currentHeight;
+                console.log(`Fallback: Both width and height specified: ${finalW}x${finalH}`);
             } else if (currentWidth && !currentHeight) {
-                const defaultHeight = Math.round(currentWidth * DEFAULT_ASPECT_RATIO);
-                this.iframe.setAttribute('height', defaultHeight.toString());
-                console.log(`Fallback: Set height from width: ${currentWidth}x${defaultHeight} (16:9 default aspect ratio)`);
+                finalW = currentWidth;
+                finalH = Math.round(currentWidth * DEFAULT_ASPECT_RATIO);
+                console.log(`Fallback: Set height from width: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             } else if (currentHeight && !currentWidth) {
-                const defaultWidth = Math.round(currentHeight / DEFAULT_ASPECT_RATIO);
-                this.iframe.setAttribute('width', defaultWidth.toString());
-                console.log(`Fallback: Set width from height: ${defaultWidth}x${currentHeight} (16:9 default aspect ratio)`);
+                finalH = currentHeight;
+                finalW = Math.round(currentHeight / DEFAULT_ASPECT_RATIO);
+                console.log(`Fallback: Set width from height: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             } else {
-                const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
-                const defaultHeight = Math.round(defaultWidth * DEFAULT_ASPECT_RATIO);
-                this.iframe.setAttribute('width', defaultWidth.toString());
-                this.iframe.setAttribute('height', defaultHeight.toString());
-                console.log(`Fallback: Set default size: ${defaultWidth}x${defaultHeight} (16:9 default aspect ratio)`);
+                finalW = DEFAULT_VIDEO_WIDTH_PX;
+                finalH = Math.round(DEFAULT_VIDEO_WIDTH_PX * DEFAULT_ASPECT_RATIO);
+                console.log(`Fallback: Set default size: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             }
 
-            this.container.classList.add('initialized');
-            this.iframe.style.visibility = 'visible';
-            this.iframe.classList.add('size-ready');
+            this.applySizeToIframe(finalW, finalH, onAdjustOverlay);
             console.log('Container and iframe size ready (fallback), made visible');
-
-            onAdjustOverlay?.();
         } catch (error) {
             console.warn('Could not set fallback initial size:', error);
         }
+    }
+
+    /**
+     * iframe のサイズを確定させ、コンテナを初期化済み状態にする（内部共通処理）
+     */
+    private applySizeToIframe(width: number, height: number, onAdjustOverlay?: () => void): void {
+        this.iframe.setAttribute('width', width.toString());
+        this.iframe.setAttribute('height', height.toString());
+        this.container.classList.add('initialized');
+        this.iframe.style.visibility = 'visible';
+        this.iframe.classList.add('size-ready');
+        onAdjustOverlay?.();
     }
 
     /**

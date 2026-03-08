@@ -1,5 +1,6 @@
 import type { TurntableConfig, TurntableState } from './types';
 import { ProgressManager } from './progress-manager';
+import { timeToAngle } from './rotation-utils';
 
 /**
  * UI更新を管理するクラス（角度表示、リロードボタン、Vimeoリンク）
@@ -93,16 +94,7 @@ export class UIManager {
      * 角度表示更新
      */
     updateAngle(seconds: number): void {
-        let angle;
-
-        if (this.config.isClockwise) {
-            angle = (seconds / this.state.duration) * 360;
-        } else {
-            angle = 360 - (seconds / this.state.duration) * 360;
-        }
-
-        angle = angle % 360;
-        if (angle < 0) angle += 360;
+        const angle = timeToAngle(seconds, this.state.duration, this.config.isClockwise);
 
         if (!this.angleEl) return;
 

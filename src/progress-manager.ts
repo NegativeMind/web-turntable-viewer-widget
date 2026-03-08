@@ -40,7 +40,6 @@ export class ProgressManager {
         this.progressFill = progressFill;
         this.progressText = progressText;
         this.config = config;
-        this.progressText = progressText;
     }
 
     /**
@@ -64,6 +63,12 @@ export class ProgressManager {
 
         if (text && this.loadingText) {
             this.loadingText.textContent = text;
+        }
+
+        // 完了時はタイムアウト監視を停止（100% 到達 = 正常完了）
+        if (percentage >= 100) {
+            this.resetTimeout();
+            return;
         }
 
         // ローディングタイムアウト監視

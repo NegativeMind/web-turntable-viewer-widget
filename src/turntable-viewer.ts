@@ -217,91 +217,93 @@ export class TurntableViewer {
 
         try {
             console.log('Reloading turntable viewer...');
-
-            // DragHandlerのイベントリスナーを削除
-            if (this.dragHandler) {
-                this.dragHandler.removeEventListeners();
-                this.dragHandler = null;
-            }
-
-            // iframe情報をプレイヤー破棄前に保存（destroy が iframe を削除する可能性があるため）
-            if (!this.iframe || !this.iframe.parentElement) {
-                console.error('iframe or parent element not found, cannot reload');
-                throw new Error('Cannot reload: iframe element not properly initialized');
-            }
-
-            const parent = this.iframe.parentElement;
-            const oldId = this.iframe.id;
-            const oldClassName = this.iframe.className;
-            const oldWidth = this.iframe.getAttribute('width') || '';
-            const oldHeight = this.iframe.getAttribute('height') || '';
-
-            // プレイヤーを破棄
-            if (this.state.player) {
-                try {
-                    await this.state.player.destroy();
-                    console.log('Player destroyed successfully');
-                } catch (e) {
-                    console.warn('Error destroying player:', e);
-                }
-                this.state.player = null;
-            }
-
-            // 古いiframeを削除（既に destroy で削除されている可能性があるため確認）
-            if (this.iframe.parentElement) {
-                this.iframe.remove();
-                console.log('Old iframe removed');
-            } else {
-                console.log('iframe already removed by player.destroy()');
-            }
-
-            // 新しいiframe要素を作成
-            const newIframe = document.createElement('iframe');
-            newIframe.id = oldId;
-            newIframe.className = oldClassName;
-            newIframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
-            newIframe.setAttribute('loading', 'lazy');
-
-            // サイズ属性を即座に設定してリサイズを防ぐ
-            if (oldWidth) newIframe.setAttribute('width', oldWidth);
-            if (oldHeight) newIframe.setAttribute('height', oldHeight);
-
-            // 新しいiframeを挿入
-            parent.appendChild(newIframe);
-            this.iframe = newIframe;
-            console.log('iframe element recreated with size:', oldWidth, 'x', oldHeight);
-
-            // マネージャークラスのiframe参照を更新
-            this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
-            this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
-
-            // 少し待機してブラウザがDOMを更新するのを待つ
+            this.cleanupDragHandler();
+            await this.destroyCurrentPlayer();
+            await this.recreateIframe();
+            this.reinitializeManagers();
             await delay(PLAYER_DOM_SETTLE_DELAY_MS);
-
-            // 状態をリセット
-            this.state = {
-                player: null,
-                duration: 0,
-                isPlayerReady: false,
-                isDragging: false,
-                startTime: 0,
-                dragStartX: 0,
-                lastDragUpdate: 0,
-                pendingApiCall: null,
-                lastDisplayedAngle: 0
-            };
-
+            this.resetStateForReload();
             this.progressManager.resetTimeout();
-
-            // 再初期化
             await this.initialize();
-
         } catch (error) {
             console.error('Reload failed:', error);
         } finally {
             this.isReloading = false;
             this.uiManager.setReloadLoading(false);
         }
+    }
+
+    /** DragHandler のイベントリスナーを解除して破棄 */
+    private cleanupDragHandler(): void {
+        if (this.dragHandler) {
+            this.dragHandler.removeEventListeners();
+            this.dragHandler = null;
+        }
+    }
+
+    /** Vimeo プレーヤーを破棄 */
+    private async destroyCurrentPlayer(): Promise<void> {
+        if (!this.iframe || !this.iframe.parentElement) {
+            throw new Error('Cannot reload: iframe element not properly initialized');
+        }
+        if (this.state.player) {
+            try {
+                await this.state.player.destroy();
+                console.log('Player destroyed successfully');
+            } catch (e) {
+                console.warn('Error destroying player:', e);
+            }
+            this.state.player = null;
+        }
+    }
+
+    /** 古い iframe を削除して新しい iframe を同じ位置に挿入 */
+    private async recreateIframe(): Promise<void> {
+        const parent = this.iframe.parentElement!;
+        const oldId = this.iframe.id;
+        const oldClassName = this.iframe.className;
+        const oldWidth = this.iframe.getAttribute('width') || '';
+        const oldHeight = this.iframe.getAttribute('height') || '';
+
+        if (this.iframe.parentElement) {
+            this.iframe.remove();
+            console.log('Old iframe removed');
+        } else {
+            console.log('iframe already removed by player.destroy()');
+        }
+
+        const newIframe = document.createElement('iframe');
+        newIframe.id = oldId;
+        newIframe.className = oldClassName;
+        newIframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+        newIframe.setAttribute('loading', 'lazy');
+        if (oldWidth) newIframe.setAttribute('width', oldWidth);
+        if (oldHeight) newIframe.setAttribute('height', oldHeight);
+
+        parent.appendChild(newIframe);
+        this.iframe = newIframe;
+        console.log('iframe element recreated with size:', oldWidth, 'x', oldHeight);
+    }
+
+    /** iframe 参照が変わったためマネージャーを再生成 */
+    private reinitializeManagers(): void {
+        this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
+        this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
+    }
+
+    /** リロード用に TurntableState を初期値にリセット */
+    private resetStateForReload(): void {
+        this.state = {
+            player: null,
+            duration: 0,
+            isPlayerReady: false,
+            isDragging: false,
+            startTime: 0,
+            dragStartX: 0,
+            lastDragUpdate: 0,
+            pendingApiCall: null,
+            lastDisplayedAngle: 0
+        };
     }
 
     /**
@@ -453,13 +455,6 @@ export class TurntableViewer {
      */
     private showError(title: string, message: string): void {
         this.progressManager.showError(title, message);
-    }
-
-    /**
-     * エラー表示（非推奨：後方互換性のため残す）
-     */
-    private showError_old(title: string, message: string): void {
-        this.uiManager.showError(title, message);
     }
 
     /**
