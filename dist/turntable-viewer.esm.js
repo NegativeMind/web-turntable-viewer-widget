@@ -1,13 +1,18 @@
 const x = ':host{all:initial;display:inline-block!important;visibility:visible!important;opacity:1!important;box-sizing:border-box!important}.turntable-wrapper{box-sizing:border-box;margin:0;padding:0;border:none;background:none;font-family:inherit;line-height:normal;display:inline-block;width:auto;max-width:100%;vertical-align:top}[vimeo-video-id]{box-sizing:border-box;margin:0;padding:0;background:none;font-family:inherit;line-height:normal;position:relative;display:block;width:auto;opacity:0;visibility:hidden;transition:opacity .3s ease;min-height:300px;overflow:hidden;border:1px solid transparent;touch-action:none;-webkit-touch-callout:none}[vimeo-video-id].initialized{opacity:1;visibility:visible}[vimeo-video-id] iframe{box-sizing:border-box;margin:0;padding:0;border:none;max-width:none;min-width:0;background:transparent;display:block;opacity:0;visibility:hidden;transition:opacity .3s ease}[vimeo-video-id] iframe.size-ready{opacity:1;visibility:visible}.drag-overlay{box-sizing:border-box;margin:0;padding:0;border:none;background:none;position:absolute;top:0;left:0;width:100%;height:100%;cursor:grab;user-select:none;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none}#angle-display{box-sizing:border-box;margin:0;padding:6px 10px;border:1px solid rgba(255,255,255,.1);position:absolute;bottom:10px;left:50%;transform:translate(-50%);background:#000000bf;color:#fff;border-radius:6px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 2px 8px #0000004d;pointer-events:none;z-index:5;display:none;justify-content:center;align-items:center;width:60px;white-space:nowrap;font-variant-numeric:tabular-nums;min-width:60px;font-feature-settings:"tnum" 1}.reload-button{box-sizing:border-box;margin:0;padding:0;position:absolute;top:8px;left:8px;width:32px;height:32px;background:#0000004d;border:1px solid rgba(255,255,255,.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:15;transition:all .2s ease;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}.reload-button:hover{background:#00000080;border-color:#ffffff40;transform:scale(1.05)}.reload-button:active{transform:scale(.95)}.reload-icon{width:16px;height:16px;color:#fffc;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.reload-button.loading .reload-icon{animation:reload-spin 1s linear infinite}@keyframes reload-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}#rotation-angle{display:inline-block;width:30px;text-align:right;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}.degree-symbol{display:inline-block;width:10px;text-align:left}#angle{display:inline-block;width:2.2em;text-align:right;font-variant-numeric:tabular-nums}.loading-overlay{box-sizing:border-box;margin:0;padding:0;border:none;position:absolute;top:0;left:0;width:100%;height:100%;min-height:300px;background:#000c;display:flex;align-items:center;justify-content:center;z-index:10;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);transition:opacity .3s ease;border-radius:inherit}.loading-overlay.hidden{opacity:0;pointer-events:none}.loading-content{text-align:center;color:#fff;padding:20px;border-radius:8px;background:#ffffff1a;min-width:250px;box-sizing:border-box}.loading-text{font-size:16px;margin-bottom:15px;font-weight:500}.progress-container{display:flex;align-items:center;gap:10px}.progress-bar{flex:1;height:8px;background:#fff3;border-radius:4px;overflow:hidden;position:relative}.progress-fill{height:100%;background:linear-gradient(90deg,#4caf50,#81c784);border-radius:4px;width:0%;transition:width .3s ease;position:relative}.progress-fill:after{content:"";position:absolute;top:0;left:0;height:100%;width:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2s infinite}@keyframes shimmer{0%{transform:translate(-100%)}to{transform:translate(100%)}}.progress-text{font-size:14px;font-weight:700;min-width:35px}.vimeo-viewer-wrapper{box-sizing:border-box;margin:0;padding:0;display:inline-block;width:auto}.vimeo-link{box-sizing:border-box;margin:8px 0 0;padding:6px 12px;border:none;display:block;text-align:center;color:#666;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;font-size:12px;font-weight:500;text-decoration:none;border-radius:4px;background:#0000000d;transition:color .3s ease,background-color .3s ease;width:auto;opacity:0;pointer-events:none}.vimeo-link.visible{opacity:1;pointer-events:auto}.vimeo-link:hover{color:#06c;background:#0066cc1a;text-decoration:none}.drag-overlay.dragging,[vimeo-video-id].dragging{touch-action:none}@media (max-width: 768px){.turntable-wrapper{display:block;width:100%;max-width:none;min-width:100%;box-sizing:border-box;margin:0 auto}[vimeo-video-id]{display:block;width:100%;max-width:none;min-width:100%;min-height:auto;box-sizing:border-box;margin:0 auto}[vimeo-video-id] iframe{display:block;width:100%;max-width:none;min-width:100%;height:auto;aspect-ratio:1 / 1;box-sizing:border-box;margin:0 auto}.loading-overlay{position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;min-height:auto;box-sizing:border-box;margin:0;padding:0}.loading-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:300px;min-width:200px;padding:12px 16px;box-sizing:border-box}.loading-text{font-size:14px;margin-bottom:10px;text-align:center}.progress-container{gap:8px;align-items:center;justify-content:center}.progress-bar{height:6px;flex:1;min-width:120px}.progress-text{font-size:12px;min-width:35px;text-align:center}.drag-overlay{width:100%;height:100%;box-sizing:border-box}#angle-display{bottom:5px;font-size:11px;padding:4px 8px;min-width:50px;width:50px}#rotation-angle{width:25px}.vimeo-link{font-size:11px;padding:4px 8px;margin-top:6px;display:block;text-align:center;width:100%;box-sizing:border-box}}';
-class k {
+const w = [0, 0.5], A = 1e3, v = 2e3, I = 300;
+class _ {
   constructor(e, t, i, o, a, n, s) {
-    this.loadingStartTime = null, this.lastProgressTime = 0, this.lastProgressPercentage = 0, this.container = e, this.iframe = t, this.loadingOverlay = i, this.loadingText = o, this.progressFill = a, this.progressText = n, this.config = s, this.progressText = n;
+    this.loadingStartTime = null, this.lastProgressTime = 0, this.lastProgressPercentage = 0, this.container = e, this.iframe = t, this.loadingOverlay = i, this.loadingText = o, this.progressFill = a, this.progressText = n, this.config = s;
   }
   /**
    * プログレスバーを更新
    */
   updateProgress(e, t = null) {
-    console.log(`Progress update: ${e}% - ${t || "No text"}`), this.progressFill ? (this.progressFill.style.width = `${e}%`, console.log(`Progress fill updated to ${e}%`)) : console.warn("Progress fill element not found"), this.progressText ? this.progressText.textContent = `${Math.round(e)}%` : console.warn("Progress text element not found"), t && this.loadingText && (this.loadingText.textContent = t), this.checkLoadingTimeout(e);
+    if (console.log(`Progress update: ${e}% - ${t || "No text"}`), this.progressFill ? (this.progressFill.style.width = `${e}%`, console.log(`Progress fill updated to ${e}%`)) : console.warn("Progress fill element not found"), this.progressText ? this.progressText.textContent = `${Math.round(e)}%` : console.warn("Progress text element not found"), t && this.loadingText && (this.loadingText.textContent = t), e >= 100) {
+      this.resetTimeout();
+      return;
+    }
+    this.checkLoadingTimeout(e);
   }
   /**
    * ローディングオーバーレイを表示
@@ -77,15 +82,15 @@ class k {
             `, this.loadingOverlay.style.display = "flex", this.loadingOverlay.style.backgroundColor = "rgba(0, 0, 0, 0.9)", console.error(`${e}: ${t}`));
   }
 }
-function p(d) {
-  return d instanceof Error ? d.message : String(d);
+function p(r) {
+  return r instanceof Error ? r.message : String(r);
 }
-function m(d) {
-  return new Promise((e) => setTimeout(e, d));
+function m(r) {
+  return new Promise((e) => setTimeout(e, r));
 }
-function f(d, e, t) {
+function f(r, e, t) {
   return Promise.race([
-    d,
+    r,
     new Promise(
       (i, o) => setTimeout(() => o(new Error(t || "Operation timed out")), e)
     )
@@ -101,16 +106,14 @@ class b {
   calculatePixelsPerRotation() {
     const e = parseInt(this.iframe.getAttribute("width") || "0"), t = this.container.clientWidth || 0, i = this.iframe.clientWidth || 0, o = Math.max(t, i) || 0, a = e || o || 320;
     console.log(`Container width for calculation: ${a}px (html: ${e}, container: ${t}, iframe: ${i})`);
-    let r = a / 640 * 1200;
-    return a <= 480 && (r *= 1.2), r = Math.max(250, Math.min(3e3, r)), console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(r)} for width: ${a}px`), Math.round(r);
+    let n = a / 640 * 1200;
+    return a <= 480 && (n *= 1.2), n = Math.max(250, Math.min(3e3, n)), console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(n)} for width: ${a}px`), Math.round(n);
   }
   /**
    * 表示サイズに応じた動画品質選択
    */
   selectVideoQuality() {
-    const e = parseInt(this.container.getAttribute("video-width") || "0"), t = parseInt(this.container.getAttribute("video-height") || "0"), i = parseInt(this.iframe.getAttribute("width") || "0"), o = parseInt(this.iframe.getAttribute("height") || "0"), a = this.iframe.clientWidth || this.container.clientWidth || 0;
-    this.iframe.clientHeight || this.container.clientHeight;
-    const n = e || i || a || 480, s = t || o || n, r = n * s, g = Math.sqrt(r), c = window.devicePixelRatio || 1;
+    const e = parseInt(this.container.getAttribute("video-width") || "0"), t = parseInt(this.container.getAttribute("video-height") || "0"), i = parseInt(this.iframe.getAttribute("width") || "0"), o = parseInt(this.iframe.getAttribute("height") || "0"), a = this.iframe.clientWidth || this.container.clientWidth || 0, n = e || i || a || 480, s = t || o || n, d = n * s, g = Math.sqrt(d), c = window.devicePixelRatio || 1;
     let l;
     if (i && o || e && t) {
       const u = Math.min(c, 1.5);
@@ -127,12 +130,12 @@ class b {
     var l;
     const e = this.selectVideoQuality(), t = parseInt(this.container.getAttribute("video-width") || "0"), i = parseInt(this.container.getAttribute("video-height") || "0"), o = parseInt(this.iframe.getAttribute("width") || "0"), a = parseInt(this.iframe.getAttribute("height") || "0");
     let n = t || o || 480, s = i || a || n;
-    const r = window.innerWidth || document.documentElement.clientWidth;
-    if (r <= 768) {
-      const h = this.container.clientWidth || ((l = this.container.parentElement) == null ? void 0 : l.clientWidth) || r, u = Math.floor(h * 0.9);
+    const d = window.innerWidth || document.documentElement.clientWidth;
+    if (d <= 768) {
+      const h = this.container.clientWidth || ((l = this.container.parentElement) == null ? void 0 : l.clientWidth) || d, u = Math.floor(h * 0.9);
       u > 200 && (n = u, s = u);
     }
-    this.iframe.setAttribute("width", n.toString()), this.iframe.setAttribute("height", s.toString()), r <= 768 && (this.iframe.style.width = n + "px", this.iframe.style.height = s + "px", this.iframe.style.maxWidth = "none", this.iframe.style.display = "block", console.log(`Applied direct CSS styles: ${n}x${s}`));
+    this.iframe.setAttribute("width", n.toString()), this.iframe.setAttribute("height", s.toString()), d <= 768 && (this.iframe.style.width = n + "px", this.iframe.style.height = s + "px", this.iframe.style.maxWidth = "none", this.iframe.style.display = "block", console.log(`Applied direct CSS styles: ${n}x${s}`));
     const g = new URLSearchParams({
       background: "1",
       byline: "0",
@@ -149,7 +152,7 @@ class b {
       responsive: "0",
       dnt: "1"
     }), c = `https://player.vimeo.com/video/${this.config.videoId}?${g.toString()}`;
-    return console.log(`Video URL set: ${c} (Size: ${n}x${s}, Screen: ${r})`), c;
+    return console.log(`Video URL set: ${c} (Size: ${n}x${s}, Screen: ${d})`), c;
   }
   /**
    * Vimeo oEmbed APIから動画情報を事前取得
@@ -185,7 +188,7 @@ class b {
       return e.name === "AbortError" ? console.warn("API request timed out, using default aspect ratio") : console.warn("Could not fetch video info from API:", p(e)), {
         width: 1920,
         height: 1080,
-        aspectRatio: 9 / 16,
+        aspectRatio: 0.5625,
         title: "Untitled Video"
       };
     }
@@ -197,24 +200,17 @@ class b {
     try {
       const i = parseInt(this.iframe.getAttribute("width") || "0"), o = parseInt(this.iframe.getAttribute("height") || "0");
       if (this.iframe.style.visibility = "hidden", i && o) {
-        console.log(`Both width and height specified: ${i}x${o}`), this.container.classList.add("initialized"), this.iframe.style.visibility = "visible", this.iframe.classList.add("size-ready"), console.log("Container and iframe ready with fixed size"), t == null || t();
+        console.log(`Both width and height specified: ${i}x${o}`), this.applySizeToIframe(i, o, t);
         return;
       }
+      e == null || e(5, "Getting video information...");
+      const a = await this.getVideoInfoFromAPI();
       if (i || o) {
-        e == null || e(5, "Getting video information...");
-        const a = await this.getVideoInfoFromAPI();
-        if (i && !o) {
-          const n = Math.round(i * a.aspectRatio);
-          this.iframe.setAttribute("height", n.toString()), console.log(`Set height from width: ${i}x${n} (aspect ratio: ${a.aspectRatio.toFixed(3)})`);
-        } else if (o && !i) {
-          const n = Math.round(o / a.aspectRatio);
-          this.iframe.setAttribute("width", n.toString()), console.log(`Set width from height: ${n}x${o} (aspect ratio: ${a.aspectRatio.toFixed(3)})`);
-        }
-        this.container.classList.add("initialized"), this.iframe.style.visibility = "visible", this.iframe.classList.add("size-ready"), console.log("Container and iframe size ready, made visible"), t == null || t();
+        let n = i, s = o;
+        i && !o ? (s = Math.round(i * a.aspectRatio), console.log(`Set height from width: ${n}x${s} (aspect ratio: ${a.aspectRatio.toFixed(3)})`)) : (n = Math.round(o / a.aspectRatio), console.log(`Set width from height: ${n}x${s} (aspect ratio: ${a.aspectRatio.toFixed(3)})`)), this.applySizeToIframe(n, s, t);
       } else {
-        e == null || e(5, "Getting video information...");
-        const n = await this.getVideoInfoFromAPI(), s = Math.round(480 * n.aspectRatio);
-        this.iframe.setAttribute("width", "480"), this.iframe.setAttribute("height", s.toString()), console.log(`Set default size: 480x${s} (aspect ratio: ${n.aspectRatio.toFixed(3)})`), this.container.classList.add("initialized"), this.iframe.style.visibility = "visible", this.iframe.classList.add("size-ready"), console.log("Container and iframe size ready with default size"), t == null || t();
+        const s = Math.round(480 * a.aspectRatio);
+        console.log(`Set default size: 480x${s} (aspect ratio: ${a.aspectRatio.toFixed(3)})`), this.applySizeToIframe(480, s, t);
       }
       console.log("setInitialSizeFromAPI completed");
     } catch (i) {
@@ -227,22 +223,17 @@ class b {
   setInitialSizeFallback(e) {
     try {
       const t = parseInt(this.iframe.getAttribute("width") || "0"), i = parseInt(this.iframe.getAttribute("height") || "0");
-      if (t && i)
-        console.log(`Fallback: Both width and height specified: ${t}x${i}`);
-      else if (t && !i) {
-        const o = Math.round(t * 0.5625);
-        this.iframe.setAttribute("height", o.toString()), console.log(`Fallback: Set height from width: ${t}x${o} (16:9 default aspect ratio)`);
-      } else if (i && !t) {
-        const o = Math.round(i / 0.5625);
-        this.iframe.setAttribute("width", o.toString()), console.log(`Fallback: Set width from height: ${o}x${i} (16:9 default aspect ratio)`);
-      } else {
-        const a = Math.round(270);
-        this.iframe.setAttribute("width", "480"), this.iframe.setAttribute("height", a.toString()), console.log(`Fallback: Set default size: 480x${a} (16:9 default aspect ratio)`);
-      }
-      this.container.classList.add("initialized"), this.iframe.style.visibility = "visible", this.iframe.classList.add("size-ready"), console.log("Container and iframe size ready (fallback), made visible"), e == null || e();
+      let o, a;
+      t && i ? (o = t, a = i, console.log(`Fallback: Both width and height specified: ${o}x${a}`)) : t && !i ? (o = t, a = Math.round(t * 0.5625), console.log(`Fallback: Set height from width: ${o}x${a} (16:9 default aspect ratio)`)) : i && !t ? (a = i, o = Math.round(i / 0.5625), console.log(`Fallback: Set width from height: ${o}x${a} (16:9 default aspect ratio)`)) : (o = 480, a = Math.round(480 * 0.5625), console.log(`Fallback: Set default size: ${o}x${a} (16:9 default aspect ratio)`)), this.applySizeToIframe(o, a, e), console.log("Container and iframe size ready (fallback), made visible");
     } catch (t) {
       console.warn("Could not set fallback initial size:", t);
     }
+  }
+  /**
+   * iframe のサイズを確定させ、コンテナを初期化済み状態にする（内部共通処理）
+   */
+  applySizeToIframe(e, t, i) {
+    this.iframe.setAttribute("width", e.toString()), this.iframe.setAttribute("height", t.toString()), this.container.classList.add("initialized"), this.iframe.style.visibility = "visible", this.iframe.classList.add("size-ready"), i == null || i();
   }
   /**
    * 動画プレイヤーのセットアップ
@@ -252,7 +243,7 @@ class b {
     this.iframe.src = e;
   }
 }
-class w {
+class E {
   constructor(e, t) {
     this.container = e, this.iframe = t;
   }
@@ -296,8 +287,8 @@ class w {
         "Failed to get video height"
       ), a = o / i;
       console.log(`Player Video dimensions: ${i}x${o}, aspect ratio: ${a.toFixed(3)}`);
-      const n = parseInt(this.iframe.getAttribute("width") || "480"), r = parseInt(this.iframe.getAttribute("height") || "480") / n;
-      if (!parseInt(this.container.getAttribute("video-height") || "0") && Math.abs(r - a) > 0.01) {
+      const n = parseInt(this.iframe.getAttribute("width") || "480"), d = parseInt(this.iframe.getAttribute("height") || "480") / n;
+      if (!parseInt(this.container.getAttribute("video-height") || "0") && Math.abs(d - a) > 0.01) {
         const c = Math.round(n * a);
         this.iframe.setAttribute("height", c.toString()), console.log(`Fine-tuned iframe size: ${n}x${c} (aspect ratio: ${a.toFixed(3)})`), t == null || t();
       } else
@@ -336,14 +327,13 @@ class w {
   async preloadVideo(e, t, i) {
     try {
       i == null || i(85, "Buffering video..."), console.log("Starting video buffer preload...");
-      const o = [0, 0.5];
-      for (let a = 0; a < o.length; a++) {
-        const n = o[a], s = t * n;
+      for (let o = 0; o < w.length; o++) {
+        const a = w[o], n = t * a;
         await f(
-          e.setCurrentTime(s),
+          e.setCurrentTime(n),
           5e3,
-          `Preload seek timeout at ${n * 100}%`
-        ), await m(300), i == null || i(85 + (a + 1) * 2, `Buffering ${Math.round(n * 100)}%...`);
+          `Preload seek timeout at ${a * 100}%`
+        ), await m(300), i == null || i(85 + (o + 1) * 2, `Buffering ${Math.round(a * 100)}%...`);
       }
       return await f(e.setCurrentTime(0), 5e3, "Preload final seek timeout"), console.log("Video buffer preload completed"), !0;
     } catch (o) {
@@ -368,7 +358,7 @@ class w {
       }
   }
 }
-class M {
+class P {
   constructor(e, t, i, o, a, n) {
     this.container = e, this.dragOverlay = t, this.state = i, this.config = o, this.calculatePixelsPerRotation = a, this.onAngleUpdate = n, this.boundMouseDown = this.onMouseDown.bind(this), this.boundMouseMove = this.onMouseMove.bind(this), this.boundMouseUp = this.onMouseUp.bind(this), this.boundTouchStart = this.onTouchStart.bind(this), this.boundTouchMove = this.onTouchMove.bind(this), this.boundTouchEnd = this.onTouchEnd.bind(this);
   }
@@ -467,9 +457,14 @@ class M {
     e.preventDefault(), e.stopPropagation(), this.handleDragEnd(), document.removeEventListener("touchmove", this.boundTouchMove), document.removeEventListener("touchend", this.boundTouchEnd);
   }
 }
-class E {
-  constructor(e, t, i, o, a, n, s, r) {
-    this.container = e, this.iframe = t, this.angleEl = i, this.angleDisplay = o, this.config = a, this.state = n, this.progressManager = s, this.onReload = r, this.reloadButton = document.createElement("button"), this.createReloadButton();
+function M(r, e, t) {
+  if (e <= 0) return 0;
+  const i = r / e;
+  return ((t ? i * 360 : 360 - i * 360) % 360 + 360) % 360;
+}
+class L {
+  constructor(e, t, i, o, a, n, s, d) {
+    this.container = e, this.iframe = t, this.angleEl = i, this.angleDisplay = o, this.config = a, this.state = n, this.progressManager = s, this.onReload = d, this.reloadButton = document.createElement("button"), this.createReloadButton();
   }
   /**
    * リロードボタンを作成
@@ -506,8 +501,8 @@ class E {
    * 角度表示更新
    */
   updateAngle(e) {
-    let t;
-    if (this.config.isClockwise ? t = e / this.state.duration * 360 : t = 360 - e / this.state.duration * 360, t = t % 360, t < 0 && (t += 360), !this.angleEl) return;
+    const t = M(e, this.state.duration, this.config.isClockwise);
+    if (!this.angleEl) return;
     const i = Math.round(t);
     this.state.isDragging ? (this.angleEl.textContent = i.toString(), this.state.lastDisplayedAngle = i) : this.state.lastDisplayedAngle !== i && (this.angleEl.textContent = i.toString(), this.state.lastDisplayedAngle = i);
   }
@@ -580,18 +575,18 @@ class y {
     if (!s)
       throw new Error("drag-overlay element not found in container");
     this.dragOverlay = s;
-    const r = this.container.querySelector(".loading-overlay"), g = this.container.querySelector(".loading-text"), c = this.container.querySelector(".progress-fill"), l = this.container.querySelector(".progress-text");
-    if (!r || !g || !c || !l)
+    const d = this.container.querySelector(".loading-overlay"), g = this.container.querySelector(".loading-text"), c = this.container.querySelector(".progress-fill"), l = this.container.querySelector(".progress-text");
+    if (!d || !g || !c || !l)
       throw new Error("Required loading elements not found in container");
-    if (this.progressManager = new k(
+    if (this.progressManager = new _(
       this.container,
       this.iframe,
-      r,
+      d,
       g,
       c,
       l,
       this.config
-    ), console.log("DOM elements check:"), console.log("- container:", !!this.container), console.log("- iframe:", !!this.iframe), console.log("- loadingOverlay:", !!r), console.log("- progressFill:", !!c), console.log("- progressText:", !!l), console.log("- loadingText:", !!g), console.log("- angleEl (optional):", !!a), console.log("- angleDisplay (optional):", !!n), !this.container || !this.iframe || !r)
+    ), console.log("DOM elements check:"), console.log("- container:", !!this.container), console.log("- iframe:", !!this.iframe), console.log("- loadingOverlay:", !!d), console.log("- progressFill:", !!c), console.log("- progressText:", !!l), console.log("- loadingText:", !!g), console.log("- angleEl (optional):", !!a), console.log("- angleDisplay (optional):", !!n), !this.container || !this.iframe || !d)
       throw new Error("Required elements not found: container, iframe, or loading-overlay");
     console.log("DOM elements validation passed");
     try {
@@ -610,7 +605,7 @@ class y {
       lastDragUpdate: 0,
       lastDisplayedAngle: null,
       pendingApiCall: null
-    }, this.videoConfigManager = new b(this.container, this.iframe, this.config), this.playerInitializer = new w(this.container, this.iframe), this.uiManager = new E(
+    }, this.videoConfigManager = new b(this.container, this.iframe, this.config), this.playerInitializer = new E(this.container, this.iframe), this.uiManager = new L(
       this.container,
       this.iframe,
       a,
@@ -619,7 +614,7 @@ class y {
       this.state,
       this.progressManager,
       this.handleReload.bind(this)
-    ), this.initialize();
+    ), this.boundOnWindowResize = this.onWindowResize.bind(this), this.initialize();
   }
   /**
    * 設定を取得
@@ -632,7 +627,7 @@ class y {
     if (!/^\d+$/.test(e))
       throw new Error(`Invalid vimeo-video-id format: "${e}". Only numeric IDs are allowed.`);
     return {
-      PLAYER_LOAD_DELAY_MS: 1e3,
+      PLAYER_LOAD_DELAY_MS: A,
       DRAG_THROTTLE_MS: 16,
       isClockwise: i,
       videoId: e,
@@ -657,30 +652,7 @@ class y {
     if (!this.isReloading) {
       this.isReloading = !0, this.uiManager.setReloadLoading(!0);
       try {
-        if (console.log("Reloading turntable viewer..."), this.dragHandler && (this.dragHandler.removeEventListeners(), this.dragHandler = null), !this.iframe || !this.iframe.parentElement)
-          throw console.error("iframe or parent element not found, cannot reload"), new Error("Cannot reload: iframe element not properly initialized");
-        const e = this.iframe.parentElement, t = this.iframe.id, i = this.iframe.className, o = this.iframe.getAttribute("width") || "", a = this.iframe.getAttribute("height") || "";
-        if (this.state.player) {
-          try {
-            await this.state.player.destroy(), console.log("Player destroyed successfully");
-          } catch (s) {
-            console.warn("Error destroying player:", s);
-          }
-          this.state.player = null;
-        }
-        this.iframe.parentElement ? (this.iframe.remove(), console.log("Old iframe removed")) : console.log("iframe already removed by player.destroy()");
-        const n = document.createElement("iframe");
-        n.id = t, n.className = i, n.setAttribute("allow", "autoplay; fullscreen; picture-in-picture"), n.setAttribute("loading", "lazy"), o && n.setAttribute("width", o), a && n.setAttribute("height", a), e.appendChild(n), this.iframe = n, console.log("iframe element recreated with size:", o, "x", a), this.videoConfigManager = new b(this.container, this.iframe, this.config), this.playerInitializer = new w(this.container, this.iframe), await m(300), this.state = {
-          player: null,
-          duration: 0,
-          isPlayerReady: !1,
-          isDragging: !1,
-          startTime: 0,
-          dragStartX: 0,
-          lastDragUpdate: 0,
-          pendingApiCall: null,
-          lastDisplayedAngle: 0
-        }, this.progressManager.resetTimeout(), await this.initialize();
+        console.log("Reloading turntable viewer..."), this.cleanupDragHandler(), await this.destroyCurrentPlayer(), await this.recreateIframe(), this.reinitializeManagers(), await m(I), this.resetStateForReload(), this.progressManager.resetTimeout(), await this.initialize();
       } catch (e) {
         console.error("Reload failed:", e);
       } finally {
@@ -688,54 +660,113 @@ class y {
       }
     }
   }
+  /** DragHandler のイベントリスナーを解除して破棄 */
+  cleanupDragHandler() {
+    this.dragHandler && (this.dragHandler.removeEventListeners(), this.dragHandler = null);
+  }
+  /** Vimeo プレーヤーを破棄 */
+  async destroyCurrentPlayer() {
+    if (!this.iframe || !this.iframe.parentElement)
+      throw new Error("Cannot reload: iframe element not properly initialized");
+    if (this.state.player) {
+      try {
+        await this.state.player.destroy(), console.log("Player destroyed successfully");
+      } catch (e) {
+        console.warn("Error destroying player:", e);
+      }
+      this.state.player = null;
+    }
+  }
+  /** 古い iframe を削除して新しい iframe を同じ位置に挿入 */
+  async recreateIframe() {
+    const e = this.iframe.parentElement, t = this.iframe.id, i = this.iframe.className, o = this.iframe.getAttribute("width") || "", a = this.iframe.getAttribute("height") || "";
+    this.iframe.parentElement ? (this.iframe.remove(), console.log("Old iframe removed")) : console.log("iframe already removed by player.destroy()");
+    const n = document.createElement("iframe");
+    n.id = t, n.className = i, n.setAttribute("allow", "autoplay; fullscreen; picture-in-picture"), n.setAttribute("loading", "lazy"), o && n.setAttribute("width", o), a && n.setAttribute("height", a), e.appendChild(n), this.iframe = n, console.log("iframe element recreated with size:", o, "x", a);
+  }
+  /** iframe 参照が変わったためマネージャーを再生成 */
+  reinitializeManagers() {
+    this.videoConfigManager = new b(this.container, this.iframe, this.config), this.playerInitializer = new E(this.container, this.iframe);
+  }
+  /** リロード用に TurntableState を初期値にリセット */
+  resetStateForReload() {
+    this.state = {
+      player: null,
+      duration: 0,
+      isPlayerReady: !1,
+      isDragging: !1,
+      startTime: 0,
+      dragStartX: 0,
+      lastDragUpdate: 0,
+      pendingApiCall: null,
+      lastDisplayedAngle: 0
+    };
+  }
   /**
    * Vimeoプレイヤー初期化
    */
   async initializePlayer() {
     try {
-      await this.videoConfigManager.setInitialSizeFromAPI(
-        (e, t) => {
-          this.progressManager.updateProgress(e, t);
-        },
-        () => {
-          this.progressManager.adjustLoadingOverlaySize();
-        }
-      ), this.videoConfigManager.setupVideoPlayer(), this.progressManager.updateProgress(20, "Creating player..."), this.isReloading ? (await m(2e3), console.log("Extended delay for reload")) : await m(this.config.PLAYER_LOAD_DELAY_MS), this.state.player = await this.playerInitializer.createPlayer((e, t) => {
-        this.progressManager.updateProgress(e, t);
-      }), this.isReloading ? (await m(2e3), console.log("Extended player load delay for reload")) : await m(this.config.PLAYER_LOAD_DELAY_MS), this.progressManager.updateProgress(60, "Loading player settings..."), this.state.duration = await this.playerInitializer.getPlayerDuration(
-        this.state.player,
-        this.isReloading,
-        (e, t) => this.progressManager.updateProgress(e, t)
-      ), await this.playerInitializer.adjustVideoAspectRatio(
-        this.state.player,
-        () => this.progressManager.adjustLoadingOverlaySize()
-      ), this.progressManager.updateProgress(75, "Applying player settings..."), await this.playerInitializer.applyPlayerSettings(this.state.player), await this.playerInitializer.preloadVideo(
-        this.state.player,
-        this.state.duration,
-        (e, t) => this.progressManager.updateProgress(e, t)
-      ), this.progressManager.updateProgress(90, "Setting initial state..."), await this.playerInitializer.setInitialPlayerState(this.state.player), this.uiManager.updateAngle(0), this.state.isPlayerReady = !0, console.log("Player ready"), this.progressManager.updateProgress(100, "Initialization complete!"), setTimeout(() => {
-        this.uiManager.hideLoadingOverlay();
-      }, 500);
+      await this.setupVideoSource(), this.state.player = await this.createAndLoadPlayer(), await this.configurePlayer(this.state.player), this.finalizePlayerSetup();
     } catch (e) {
-      console.error("Player initialization failed:", e);
-      const t = p(e);
-      t.includes("Failed to create Vimeo player") ? this.showError("Player Error", "Failed to create player. Check connection and reload.") : t.includes("Video not found") ? this.showError("Video Not Found", "The specified video was not found. Check the video ID.") : t.includes("Access denied") ? this.showError("Access Denied", "This video is private or restricted.") : t.includes("Failed to get video duration") ? this.showError("Failed to Load", "Could not retrieve video duration. Check network and reload.") : this.showError("Initialization Error", `Failed to load video player.<br><br>Error: ${t}<br><br>Click reload to retry.`), this.videoConfigManager.setInitialSizeFallback(() => {
-        this.progressManager.adjustLoadingOverlaySize();
-      }), console.log("Error state maintained, loading overlay not hidden");
+      this.handlePlayerInitError(e);
     }
+  }
+  /** 動画ソースを設定してiframeを準備 */
+  async setupVideoSource() {
+    await this.videoConfigManager.setInitialSizeFromAPI(
+      (e, t) => this.progressManager.updateProgress(e, t),
+      () => this.progressManager.adjustLoadingOverlaySize()
+    ), this.videoConfigManager.setupVideoPlayer(), this.progressManager.updateProgress(20, "Creating player..."), this.isReloading ? (await m(v), console.log("Extended delay for reload")) : await m(this.config.PLAYER_LOAD_DELAY_MS);
+  }
+  /** プレイヤーを作成して基本ロードを待機 */
+  async createAndLoadPlayer() {
+    const e = await this.playerInitializer.createPlayer(
+      (t, i) => this.progressManager.updateProgress(t, i)
+    );
+    return this.isReloading ? (await m(v), console.log("Extended player load delay for reload")) : await m(this.config.PLAYER_LOAD_DELAY_MS), e;
+  }
+  /** プレイヤーの設定・バッファリング・初期状態を適用 */
+  async configurePlayer(e) {
+    this.state.duration = await this.playerInitializer.getPlayerDuration(
+      e,
+      this.isReloading,
+      (t, i) => this.progressManager.updateProgress(t, i)
+    ), await this.playerInitializer.adjustVideoAspectRatio(
+      e,
+      () => this.progressManager.adjustLoadingOverlaySize()
+    ), await this.playerInitializer.applyPlayerSettings(e), await this.playerInitializer.preloadVideo(
+      e,
+      this.state.duration,
+      (t, i) => this.progressManager.updateProgress(t, i)
+    ), await this.playerInitializer.setInitialPlayerState(e);
+  }
+  /** 初期化完了後の状態更新とUI処理 */
+  finalizePlayerSetup() {
+    this.uiManager.updateAngle(0), this.state.isPlayerReady = !0, console.log("Player ready"), this.progressManager.updateProgress(100, "Initialization complete!"), setTimeout(() => {
+      this.uiManager.hideLoadingOverlay();
+    }, 500);
+  }
+  /** プレイヤー初期化エラーを処理 */
+  handlePlayerInitError(e) {
+    console.error("Player initialization failed:", e);
+    const t = p(e);
+    t.includes("Failed to create Vimeo player") ? this.showError("Player Error", "Failed to create player. Check connection and reload.") : t.includes("Video not found") ? this.showError("Video Not Found", "The specified video was not found. Check the video ID.") : t.includes("Access denied") ? this.showError("Access Denied", "This video is private or restricted.") : t.includes("Failed to get video duration") ? this.showError("Failed to Load", "Could not retrieve video duration. Check network and reload.") : this.showError("Initialization Error", `Failed to load video player.<br><br>Error: ${t}<br><br>Click reload to retry.`), this.videoConfigManager.setInitialSizeFallback(() => {
+      this.progressManager.adjustLoadingOverlaySize();
+    }), console.log("Error state maintained, loading overlay not hidden");
   }
   /**
    * イベントリスナーの追加
    */
   attachEventListeners() {
-    this.dragHandler = new M(
+    this.dragHandler = new P(
       this.container,
       this.dragOverlay,
       this.state,
       this.config,
       () => this.videoConfigManager.calculatePixelsPerRotation(),
       (e) => this.uiManager.updateAngle(e)
-    ), this.dragHandler.attachEventListeners(), window.addEventListener("resize", this.onWindowResize.bind(this));
+    ), this.dragHandler.attachEventListeners(), window.addEventListener("resize", this.boundOnWindowResize);
   }
   /**
    * ウィンドウリサイズイベントハンドラー
@@ -753,20 +784,14 @@ class y {
     this.progressManager.showError(e, t);
   }
   /**
-   * エラー表示（非推奨：後方互換性のため残す）
-   */
-  showError_old(e, t) {
-    this.uiManager.showError(e, t);
-  }
-  /**
    * クリーンアップ
    */
   destroy() {
-    this.dragHandler && this.dragHandler.removeEventListeners(), window.removeEventListener("resize", this.onWindowResize.bind(this)), console.log("TurntableViewer destroyed");
+    this.dragHandler && this.dragHandler.removeEventListeners(), window.removeEventListener("resize", this.boundOnWindowResize), console.log("TurntableViewer destroyed");
   }
 }
 typeof window < "u" && (window.TurntableViewer = y);
-class v extends HTMLElement {
+class T extends HTMLElement {
   constructor() {
     super(), this.viewer = null, this.shadowContainer = null, this.attachShadow({ mode: "open" });
   }
@@ -777,7 +802,7 @@ class v extends HTMLElement {
     this.render(), this.initializeViewer();
   }
   disconnectedCallback() {
-    this.viewer;
+    this.viewer && (this.viewer.destroy(), this.viewer = null);
   }
   render() {
     const e = this.getAttribute("vimeo-video-id"), t = this.getAttribute("clockwise-rotation"), i = this.getAttribute("width") || "480", o = this.getAttribute("height") || "", a = this.hasAttribute("show-angle");
@@ -826,10 +851,10 @@ class v extends HTMLElement {
       }
   }
 }
-customElements.get("turntable-viewer") || customElements.define("turntable-viewer", v);
-typeof window < "u" && (window.TurntableViewer = y, window.TurntableViewerElement = v);
+customElements.get("turntable-viewer") || customElements.define("turntable-viewer", T);
+typeof window < "u" && (window.TurntableViewer = y, window.TurntableViewerElement = T);
 export {
   y as TurntableViewer,
-  v as TurntableViewerElement
+  T as TurntableViewerElement
 };
 //# sourceMappingURL=turntable-viewer.esm.js.map

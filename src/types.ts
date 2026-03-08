@@ -69,4 +69,6 @@ export interface VideoInfo {
     title: string;
 }
 
+export type VimeoPlayer = Vimeo.Player;
+
 export { };

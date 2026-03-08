@@ -1,4 +1,4 @@
-import type { TurntableState } from './types';
+import type { VimeoPlayer } from './types';
 import { getErrorMessage, withTimeout, delay } from './utils';
 import {
     PLAYER_DURATION_TIMEOUT_MS,
@@ -24,7 +24,7 @@ export class PlayerInitializer {
     /**
      * Vimeoプレイヤーを作成
      */
-    async createPlayer(onProgress?: (progress: number, message: string) => void): Promise<any> {
+    async createPlayer(onProgress?: (progress: number, message: string) => void): Promise<VimeoPlayer> {
         try {
             onProgress?.(40, 'Connecting to player...');
             // @ts-ignore - VimeoはグローバルにCDNから読み込まれている
@@ -38,7 +38,7 @@ export class PlayerInitializer {
     /**
      * プレイヤーの基本情報取得
      */
-    async getPlayerDuration(player: any, isReloading: boolean = false, onProgress?: (progress: number, message: string) => void): Promise<number> {
+    async getPlayerDuration(player: VimeoPlayer, isReloading: boolean = false, onProgress?: (progress: number, message: string) => void): Promise<number> {
         onProgress?.(60, 'Loading player settings...');
 
         // リロード時はタイムアウトを長くする
@@ -60,7 +60,7 @@ export class PlayerInitializer {
     /**
      * 動画のアスペクト比を調整（プレイヤー情報から詳細確認）
      */
-    async adjustVideoAspectRatio(player: any, onAdjustOverlay?: () => void): Promise<void> {
+    async adjustVideoAspectRatio(player: VimeoPlayer, onAdjustOverlay?: () => void): Promise<void> {
         try {
             console.log('Getting video dimensions...');
             const videoWidth = await withTimeout(
@@ -100,7 +100,7 @@ export class PlayerInitializer {
     /**
      * プレイヤー設定を個別にエラーハンドリング付きで適用
      */
-    async applyPlayerSettings(player: any, onProgress?: (progress: number, message: string) => void): Promise<void> {
+    async applyPlayerSettings(player: VimeoPlayer, onProgress?: (progress: number, message: string) => void): Promise<void> {
         onProgress?.(75, 'Applying player settings...');
 
         const settings = [
@@ -118,7 +118,7 @@ export class PlayerInitializer {
 
         for (const setting of settings) {
             try {
-                await withTimeout(setting.action(), PLAYER_SETTING_TIMEOUT_MS, `Failed to set ${setting.name}`);
+                await withTimeout(setting.action() as Promise<unknown>, PLAYER_SETTING_TIMEOUT_MS, `Failed to set ${setting.name}`);
                 console.log(`Successfully set ${setting.name}`);
             } catch (error) {
                 console.warn(`Setting ${setting.name} failed:`, getErrorMessage(error));
@@ -130,7 +130,7 @@ export class PlayerInitializer {
     /**
      * 動画の事前ロード（失敗しても続行可能）
      */
-    async preloadVideo(player: any, duration: number, onProgress?: (progress: number, message: string) => void): Promise<boolean> {
+    async preloadVideo(player: VimeoPlayer, duration: number, onProgress?: (progress: number, message: string) => void): Promise<boolean> {
         try {
             onProgress?.(85, 'Buffering video...');
             console.log('Starting video buffer preload...');
@@ -163,7 +163,7 @@ export class PlayerInitializer {
     /**
      * 初期プレイヤー状態の設定
      */
-    async setInitialPlayerState(player: any, onProgress?: (progress: number, message: string) => void): Promise<void> {
+    async setInitialPlayerState(player: VimeoPlayer, onProgress?: (progress: number, message: string) => void): Promise<void> {
         onProgress?.(90, 'Setting initial state...');
 
         // playはブラウザの自動再生ポリシーでブロックされる可能性があるが、
@@ -176,7 +176,7 @@ export class PlayerInitializer {
 
         for (const action of actions) {
             try {
-                await withTimeout(action.action(), PLAYER_SETTING_TIMEOUT_MS, `Failed to ${action.name}`);
+                await withTimeout(action.action() as Promise<unknown>, PLAYER_SETTING_TIMEOUT_MS, `Failed to ${action.name}`);
                 console.log(`Successfully executed: ${action.name}`);
             } catch (error) {
                 if (action.optional) {

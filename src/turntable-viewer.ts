@@ -1,6 +1,6 @@
 // CSSをインポート
 import './turntable-viewer.css';
-import type { TurntableConfig, TurntableState } from './types';
+import type { TurntableConfig, TurntableState, VimeoPlayer } from './types';
 import { ProgressManager } from './progress-manager';
 import { VideoConfigManager } from './video-config-manager';
 import { PlayerInitializer } from './player-initializer';
@@ -311,108 +311,98 @@ export class TurntableViewer {
      */
     async initializePlayer(): Promise<void> {
         try {
-            // 初期サイズを設定
-            await this.videoConfigManager.setInitialSizeFromAPI(
-                (progress, message) => {
-                    this.progressManager.updateProgress(progress, message);
-                },
-                () => {
-                    this.progressManager.adjustLoadingOverlaySize();
-                }
-            );
-
-            // 動画URLを構築してiframeを設定
-            this.videoConfigManager.setupVideoPlayer();
-
-            this.progressManager.updateProgress(20, 'Creating player...');
-
-            // iframeが新しいURLをロードするまで待機（リロード時は長めに）
-            if (this.isReloading) {
-                await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
-                console.log('Extended delay for reload');
-            } else {
-                await delay(this.config.PLAYER_LOAD_DELAY_MS);
-            }
-
-            // プレイヤーを作成
-            this.state.player = await this.playerInitializer.createPlayer((progress, message) => {
-                this.progressManager.updateProgress(progress, message);
-            });
-
-            // プレイヤーが完全にロードされるまで待機（リロード時はさらに長めに）
-            if (this.isReloading) {
-                await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
-                console.log('Extended player load delay for reload');
-            } else {
-                await delay(this.config.PLAYER_LOAD_DELAY_MS);
-            }
-            this.progressManager.updateProgress(60, 'Loading player settings...');
-
-            // プレイヤーの基本情報取得
-            this.state.duration = await this.playerInitializer.getPlayerDuration(
-                this.state.player,
-                this.isReloading,
-                (progress, message) => this.progressManager.updateProgress(progress, message)
-            );
-
-            // 動画のアスペクト比を調整
-            await this.playerInitializer.adjustVideoAspectRatio(
-                this.state.player,
-                () => this.progressManager.adjustLoadingOverlaySize()
-            );
-
-            this.progressManager.updateProgress(75, 'Applying player settings...');
-
-            // プレイヤー設定を適用
-            await this.playerInitializer.applyPlayerSettings(this.state.player);
-
-            // 動画の事前バッファリング（オプショナル）
-            await this.playerInitializer.preloadVideo(
-                this.state.player,
-                this.state.duration,
-                (progress, message) => this.progressManager.updateProgress(progress, message)
-            );
-
-            this.progressManager.updateProgress(90, 'Setting initial state...');
-
-            // 初期状態設定
-            await this.playerInitializer.setInitialPlayerState(this.state.player);
-
-            // 初期角度表示を更新
-            this.uiManager.updateAngle(0);
-
-            this.state.isPlayerReady = true;
-            console.log('Player ready');
-
-            // プログレス完了
-            this.progressManager.updateProgress(100, 'Initialization complete!');
-
-            // ローディングオーバーレイを隠す
-            setTimeout(() => {
-                this.uiManager.hideLoadingOverlay();
-            }, LOADING_OVERLAY_HIDE_DELAY_MS);
-
+            await this.setupVideoSource();
+            this.state.player = await this.createAndLoadPlayer();
+            await this.configurePlayer(this.state.player);
+            this.finalizePlayerSetup();
         } catch (error) {
-            console.error('Player initialization failed:', error);
-
-            const errorMessage = getErrorMessage(error);
-            if (errorMessage.includes('Failed to create Vimeo player')) {
-                this.showError('Player Error', 'Failed to create player. Check connection and reload.');
-            } else if (errorMessage.includes('Video not found')) {
-                this.showError('Video Not Found', 'The specified video was not found. Check the video ID.');
-            } else if (errorMessage.includes('Access denied')) {
-                this.showError('Access Denied', 'This video is private or restricted.');
-            } else if (errorMessage.includes('Failed to get video duration')) {
-                this.showError('Failed to Load', 'Could not retrieve video duration. Check network and reload.');
-            } else {
-                this.showError('Initialization Error', `Failed to load video player.<br><br>Error: ${errorMessage}<br><br>Click reload to retry.`);
-            }
-
-            this.videoConfigManager.setInitialSizeFallback(() => {
-                this.progressManager.adjustLoadingOverlaySize();
-            });
-            console.log('Error state maintained, loading overlay not hidden');
+            this.handlePlayerInitError(error);
         }
+    }
+
+    /** 動画ソースを設定してiframeを準備 */
+    private async setupVideoSource(): Promise<void> {
+        await this.videoConfigManager.setInitialSizeFromAPI(
+            (progress, message) => this.progressManager.updateProgress(progress, message),
+            () => this.progressManager.adjustLoadingOverlaySize()
+        );
+        this.videoConfigManager.setupVideoPlayer();
+        this.progressManager.updateProgress(20, 'Creating player...');
+
+        if (this.isReloading) {
+            await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
+            console.log('Extended delay for reload');
+        } else {
+            await delay(this.config.PLAYER_LOAD_DELAY_MS);
+        }
+    }
+
+    /** プレイヤーを作成して基本ロードを待機 */
+    private async createAndLoadPlayer(): Promise<VimeoPlayer> {
+        const player = await this.playerInitializer.createPlayer(
+            (progress, message) => this.progressManager.updateProgress(progress, message)
+        );
+
+        if (this.isReloading) {
+            await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
+            console.log('Extended player load delay for reload');
+        } else {
+            await delay(this.config.PLAYER_LOAD_DELAY_MS);
+        }
+
+        return player;
+    }
+
+    /** プレイヤーの設定・バッファリング・初期状態を適用 */
+    private async configurePlayer(player: VimeoPlayer): Promise<void> {
+        this.state.duration = await this.playerInitializer.getPlayerDuration(
+            player,
+            this.isReloading,
+            (progress, message) => this.progressManager.updateProgress(progress, message)
+        );
+        await this.playerInitializer.adjustVideoAspectRatio(
+            player,
+            () => this.progressManager.adjustLoadingOverlaySize()
+        );
+        await this.playerInitializer.applyPlayerSettings(player);
+        await this.playerInitializer.preloadVideo(
+            player,
+            this.state.duration,
+            (progress, message) => this.progressManager.updateProgress(progress, message)
+        );
+        await this.playerInitializer.setInitialPlayerState(player);
+    }
+
+    /** 初期化完了後の状態更新とUI処理 */
+    private finalizePlayerSetup(): void {
+        this.uiManager.updateAngle(0);
+        this.state.isPlayerReady = true;
+        console.log('Player ready');
+        this.progressManager.updateProgress(100, 'Initialization complete!');
+        setTimeout(() => {
+            this.uiManager.hideLoadingOverlay();
+        }, LOADING_OVERLAY_HIDE_DELAY_MS);
+    }
+
+    /** プレイヤー初期化エラーを処理 */
+    private handlePlayerInitError(error: unknown): void {
+        console.error('Player initialization failed:', error);
+        const errorMessage = getErrorMessage(error);
+        if (errorMessage.includes('Failed to create Vimeo player')) {
+            this.showError('Player Error', 'Failed to create player. Check connection and reload.');
+        } else if (errorMessage.includes('Video not found')) {
+            this.showError('Video Not Found', 'The specified video was not found. Check the video ID.');
+        } else if (errorMessage.includes('Access denied')) {
+            this.showError('Access Denied', 'This video is private or restricted.');
+        } else if (errorMessage.includes('Failed to get video duration')) {
+            this.showError('Failed to Load', 'Could not retrieve video duration. Check network and reload.');
+        } else {
+            this.showError('Initialization Error', `Failed to load video player.<br><br>Error: ${errorMessage}<br><br>Click reload to retry.`);
+        }
+        this.videoConfigManager.setInitialSizeFallback(() => {
+            this.progressManager.adjustLoadingOverlaySize();
+        });
+        console.log('Error state maintained, loading overlay not hidden');
     }
 
     /**
