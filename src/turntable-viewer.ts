@@ -259,7 +259,8 @@ export class TurntableViewer {
 
     /** 古い iframe を削除して新しい iframe を同じ位置に挿入 */
     private async recreateIframe(): Promise<void> {
-        const parent = this.iframe.parentElement!;
+        // player.destroy() が iframe を DOM から削除した場合は this.container を使う
+        const parent = this.iframe.parentElement ?? this.container;
         const oldId = this.iframe.id;
         const oldClassName = this.iframe.className;
         const oldWidth = this.iframe.getAttribute('width') || '';

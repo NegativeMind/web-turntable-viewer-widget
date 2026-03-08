@@ -679,7 +679,7 @@ class y {
   }
   /** 古い iframe を削除して新しい iframe を同じ位置に挿入 */
   async recreateIframe() {
-    const e = this.iframe.parentElement, t = this.iframe.id, i = this.iframe.className, o = this.iframe.getAttribute("width") || "", a = this.iframe.getAttribute("height") || "";
+    const e = this.iframe.parentElement ?? this.container, t = this.iframe.id, i = this.iframe.className, o = this.iframe.getAttribute("width") || "", a = this.iframe.getAttribute("height") || "";
     this.iframe.parentElement ? (this.iframe.remove(), console.log("Old iframe removed")) : console.log("iframe already removed by player.destroy()");
     const n = document.createElement("iframe");
     n.id = t, n.className = i, n.setAttribute("allow", "autoplay; fullscreen; picture-in-picture"), n.setAttribute("loading", "lazy"), o && n.setAttribute("width", o), a && n.setAttribute("height", a), e.appendChild(n), this.iframe = n, console.log("iframe element recreated with size:", o, "x", a);
