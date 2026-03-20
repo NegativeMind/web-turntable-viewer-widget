@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm run dev)",
+      "Bash(npm run preview)",
+      "Bash(npm run build:docs)",
+      "Bash(npm ci)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git tag*)",
+      "Bash(git push origin*)"
+    ],
+    "deny": [
+      "Bash(git add dist*)",
+      "Bash(git add -A)",
+      "Bash(git add .)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git diff --staged --name-only 2>/dev/null | grep -q '^dist/' && { git restore --staged dist/ 2>/dev/null; echo 'WARNING: dist/ was automatically unstaged. dist/ is managed by GitHub Actions only.'; } || true"
+          }
+        ]
+      }
+    ]
+  }
+}

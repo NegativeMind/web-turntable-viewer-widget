@@ -1,0 +1,8 @@
+#!/bin/sh
+# dist/ は GitHub Actions が自動生成・管理します。
+# staged に含まれていた場合は自動的に除外してコミットを続行します。
+
+if git diff --staged --name-only | grep -q '^dist/'; then
+    git restore --staged dist/
+    echo "⚠ dist/ をステージングから自動除外しました（GitHub Actions が管理）"
+fi

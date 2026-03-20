@@ -129,17 +129,42 @@ CDN経由と同等の動作を確認できる。
 
 ## リリースプロセス
 
-バージョンを更新する必要があるファイル（4箇所）:
+### 1. バージョン番号を更新（4箇所）
+
 1. `package.json`
 2. `README.md`（CDN URL）
 3. `embed-generator/script.ts`（CDN URL）
 4. `tests/test-cdn.html`（CDN URLとバージョン表示）
 
+### 2. main にプッシュして自動ビルドを待つ
+
 ```bash
+git push origin main
+# → build-and-commit.yml が dist/ をビルドして main にコミットする
+# GitHub Actions の完了を確認してから次のステップへ進むこと
+```
+
+> **重要:** jsDelivr CDN は `https://cdn.jsdelivr.net/gh/USER/REPO@TAG/dist/...` の形式で
+> **git ツリーから直接ファイルを配信する**。
+> タグ時点のコミットに `dist/` が含まれていないと CDN から 404 になる。
+> `build-and-commit.yml` が `dist/` を main にコミットした後でないとタグを打てない。
+
+### 3. 最新の main を取得してタグを打つ
+
+```bash
+git pull origin main          # bot がコミットした dist/ を取得
 git tag vX.X.X-beta -m "Release message"
 git push origin vX.X.X-beta
-# → GitHub Actionsが自動でリリースを作成しdist/ファイルを添付
+# → release.yml が自動で GitHub Release を作成し dist/ ファイルを添付
 ```
+
+### 自動ビルドで添付されるファイル
+
+| ファイル | 用途 |
+|---------|------|
+| `dist/turntable-viewer.js` | UMD形式（CDN・`<script>` タグ向け） |
+| `dist/turntable-viewer.esm.js` | ESモジュール形式（バンドラー向け） |
+| `dist/turntable-viewer.css` | スタイルシート（Shadow DOM外部CSSに使用しない場合） |
 
 ## 技術スタック
 

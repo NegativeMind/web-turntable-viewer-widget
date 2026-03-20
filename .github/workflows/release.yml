@@ -32,7 +32,7 @@ jobs:
         with:
           files: |
             dist/turntable-viewer.js
-            dist/turntable-viewer.umd.cjs
+            dist/turntable-viewer.esm.js
             dist/turntable-viewer.css
           generate_release_notes: true
           draft: false

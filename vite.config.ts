@@ -47,7 +47,7 @@ export default defineConfig({
     },
     // 開発サーバー設定
     server: {
-        open: '/embed-generator/index.html',
+        open: '/test-local.html',
         port: 3000
     },
     // プレビューサーバー設定

@@ -16,6 +16,7 @@
         "dist"
     ],
     "scripts": {
+        "prepare": "node scripts/install-hooks.cjs",
         "dev": "vite",
         "build": "tsc && vite build",
         "build:docs": "cross-env BUILD_MODE=docs vite build && node scripts/move-docs.js",
