@@ -28,8 +28,7 @@ export class PlayerInitializer {
         try {
             onProgress?.(40, 'Connecting to player...');
             // @ts-ignore - VimeoはグローバルにCDNから読み込まれている
-            const player = new Vimeo.Player(this.iframe);
-            return player;
+            return new Vimeo.Player(this.iframe);
         } catch (error) {
             throw new Error(`Failed to create Vimeo player: ${getErrorMessage(error)}`);
         }
@@ -41,14 +40,12 @@ export class PlayerInitializer {
     async getPlayerDuration(player: VimeoPlayer, isReloading: boolean = false, onProgress?: (progress: number, message: string) => void): Promise<number> {
         onProgress?.(60, 'Loading player settings...');
 
-        // リロード時はタイムアウトを長くする
         const timeout = isReloading ? PLAYER_DURATION_RELOAD_TIMEOUT_MS : PLAYER_DURATION_TIMEOUT_MS;
         const duration = await withTimeout(
             player.getDuration(),
             timeout,
             'Failed to get video duration'
         );
-        console.log('Duration:', duration);
 
         if (!duration || duration <= 0) {
             throw new Error('Invalid video duration received');
@@ -62,7 +59,6 @@ export class PlayerInitializer {
      */
     async adjustVideoAspectRatio(player: VimeoPlayer, onAdjustOverlay?: () => void): Promise<void> {
         try {
-            console.log('Getting video dimensions...');
             const videoWidth = await withTimeout(
                 player.getVideoWidth(),
                 PLAYER_SETTING_TIMEOUT_MS,
@@ -75,8 +71,6 @@ export class PlayerInitializer {
             );
             const aspectRatio = videoHeight / videoWidth;
 
-            console.log(`Player Video dimensions: ${videoWidth}x${videoHeight}, aspect ratio: ${aspectRatio.toFixed(3)}`);
-
             const currentWidth = parseInt(this.iframe.getAttribute('width') || '480');
             const currentHeight = parseInt(this.iframe.getAttribute('height') || '480');
             const currentAspectRatio = currentHeight / currentWidth;
@@ -85,12 +79,9 @@ export class PlayerInitializer {
             if (!specifiedVideoHeight && Math.abs(currentAspectRatio - aspectRatio) > 0.01) {
                 const calculatedHeight = Math.round(currentWidth * aspectRatio);
                 this.iframe.setAttribute('height', calculatedHeight.toString());
-                console.log(`Fine-tuned iframe size: ${currentWidth}x${calculatedHeight} (aspect ratio: ${aspectRatio.toFixed(3)})`);
-
-                onAdjustOverlay?.();
-            } else {
-                console.log('Aspect ratio already correct, no adjustment needed');
             }
+
+            onAdjustOverlay?.();
         } catch (error) {
             console.warn('Could not get video dimensions, keeping current size:', getErrorMessage(error));
             onAdjustOverlay?.();
@@ -119,7 +110,6 @@ export class PlayerInitializer {
         for (const setting of settings) {
             try {
                 await withTimeout(setting.action() as Promise<unknown>, PLAYER_SETTING_TIMEOUT_MS, `Failed to set ${setting.name}`);
-                console.log(`Successfully set ${setting.name}`);
             } catch (error) {
                 console.warn(`Setting ${setting.name} failed:`, getErrorMessage(error));
                 setting.fallback();
@@ -133,9 +123,7 @@ export class PlayerInitializer {
     async preloadVideo(player: VimeoPlayer, duration: number, onProgress?: (progress: number, message: string) => void): Promise<boolean> {
         try {
             onProgress?.(85, 'Buffering video...');
-            console.log('Starting video buffer preload...');
 
-            // 再生せずにseekだけでバッファリング（ブラウザの自動再生ブロックを回避）
             for (let i = 0; i < PLAYER_PRELOAD_POINTS.length; i++) {
                 const point = PLAYER_PRELOAD_POINTS[i];
                 const seekTime = duration * point;
@@ -145,17 +133,13 @@ export class PlayerInitializer {
                     `Preload seek timeout at ${point * 100}%`
                 );
                 await delay(PLAYER_PRELOAD_DELAY_MS);
-
                 onProgress?.(85 + (i + 1) * 2, `Buffering ${Math.round(point * 100)}%...`);
             }
 
             await withTimeout(player.setCurrentTime(0), PLAYER_PRELOAD_TIMEOUT_MS, 'Preload final seek timeout');
-
-            console.log('Video buffer preload completed');
             return true;
         } catch (error) {
-            // バッファリングはオプショナルなので、失敗しても問題ない
-            console.log('Video buffer preload skipped:', getErrorMessage(error));
+            console.warn('Video buffer preload skipped:', getErrorMessage(error));
             return false;
         }
     }
@@ -166,8 +150,6 @@ export class PlayerInitializer {
     async setInitialPlayerState(player: VimeoPlayer, onProgress?: (progress: number, message: string) => void): Promise<void> {
         onProgress?.(90, 'Setting initial state...');
 
-        // playはブラウザの自動再生ポリシーでブロックされる可能性があるが、
-        // pauseとseekが成功すればウィジェットは機能する
         const actions = [
             { name: 'play', action: () => player.play(), optional: true },
             { name: 'pause', action: () => player.pause(), optional: false },
@@ -177,13 +159,8 @@ export class PlayerInitializer {
         for (const action of actions) {
             try {
                 await withTimeout(action.action() as Promise<unknown>, PLAYER_SETTING_TIMEOUT_MS, `Failed to ${action.name}`);
-                console.log(`Successfully executed: ${action.name}`);
             } catch (error) {
-                if (action.optional) {
-                    // オプショナルな操作（play等）の失敗は通常動作
-                    console.log(`${action.name} skipped (likely blocked by browser autoplay policy)`);
-                } else {
-                    // 必須の操作（pause/seek）の失敗は警告
+                if (!action.optional) {
                     console.warn(`Action ${action.name} failed:`, getErrorMessage(error));
                 }
             }

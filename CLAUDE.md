@@ -66,8 +66,8 @@ src/
 └── video-config-manager.ts     # 動画品質・サイズ設定
 
 tests/
-├── test-local.html             # ローカルビルドのテスト
-└── test-cdn.html               # CDN配布のテスト
+├── test-local.html             # 開発中テスト（/src/index.ts を直接読み込み）
+└── test-cdn.html               # CDN配布バージョンのテスト
 
 embed-generator/
 ├── index.html                  # 埋め込みコード生成ツールUI
@@ -86,16 +86,46 @@ dist/                           # ⚠️ 自動生成 - コミット禁止
 ## 開発コマンド
 
 ```bash
-npm run dev          # Vite開発サーバー起動（http://localhost:3001）
+npm run dev          # Vite開発サーバー起動（http://localhost:3000）
 npm run build        # TypeScript型チェック + Viteビルド
 npm run build:docs   # 埋め込みジェネレーターをGitHub Pages用にビルド
 npm run preview      # プロダクションビルドのプレビュー
 ```
 
-### テスト
-- ローカルビルド: `http://localhost:3001/tests/test-local.html`
-- CDNバージョン: `http://localhost:3001/tests/test-cdn.html`
-- 埋め込みジェネレーター: `http://localhost:3001/embed-generator/`
+### テスト方法
+
+#### 開発中のテスト（ソース直読み・推奨）
+
+```bash
+npm run dev
+```
+
+`npm run dev` を起動してから以下のURLにアクセスする。
+`tests/test-local.html` は `/src/index.ts` を Vite dev server 経由で直接読み込むため、
+**ソースを変更してブラウザをリロードするだけで最新コードが反映される。**
+
+| URL | 内容 |
+|-----|------|
+| `http://localhost:3000/tests/test-local.html` | ウィジェット動作確認（ソース直読み） |
+| `http://localhost:3000/tests/test-cdn.html` | CDN配布バージョンの確認 |
+| `http://localhost:3000/embed-generator/` | 埋め込みコード生成ツール（デフォルトで開く） |
+
+> **注意:** `npm run dev` だけでは `embed-generator/` が自動で開く。
+> ウィジェットをテストするには手動で `test-local.html` のURLに移動すること。
+
+#### リリース前のビルド確認
+
+```bash
+npm run build
+npm run preview
+```
+
+`npm run preview` は `dist/` にビルドされたファイルをそのまま配信する。
+CDN経由と同等の動作を確認できる。
+
+> **`npm run build` だけではテストできない理由:**
+> ビルド後に `dist/` が更新されても、それを開くサーバーが必要。
+> `preview` を使うか、dev server に戻って `test-local.html` を使うこと。
 
 ## リリースプロセス
 

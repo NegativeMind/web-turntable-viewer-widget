@@ -9,8 +9,8 @@
     <!-- Vimeo Player API（Web Componentより先に読み込む） -->
     <script src="https://player.vimeo.com/api/player.js"></script>
 
-    <!-- Web Turntable Viewer Widget (ローカルビルド) -->
-    <script type="module" src="../dist/turntable-viewer.js"></script>
+    <!-- Web Turntable Viewer Widget (開発サーバー経由でsrcを直接読み込み) -->
+    <script type="module" src="/src/index.ts"></script>
 
     <style>
         body {
@@ -103,10 +103,10 @@
 
 <body>
     <div class="test-info">
-        <h1>🔧 ローカルビルドテスト</h1>
-        <p>このページは、ローカルでビルドされたウィジェットコードの動作確認用です。</p>
-        <p>使用ファイル: <code>../dist/turntable-viewer.js</code></p>
-        <p>バージョン: <code>v0.1.9-beta (local build)</code></p>
+        <h1>🔧 ローカル開発テスト</h1>
+        <p>このページは、<code>npm run dev</code> 実行中にソースコードを直接読み込んで動作確認するページです。</p>
+        <p>使用ファイル: <code>/src/index.ts</code>（Vite dev server 経由）</p>
+        <p>バージョン: <code>v0.1.9-beta (dev source)</code></p>
     </div>
 
     <div class="demo-area">

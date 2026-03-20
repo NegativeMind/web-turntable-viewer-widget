@@ -35,7 +35,6 @@ export class DragHandler {
         this.calculatePixelsPerRotation = calculatePixelsPerRotation;
         this.onAngleUpdate = onAngleUpdate;
 
-        // イベントハンドラーをバインド
         this.boundMouseDown = this.onMouseDown.bind(this);
         this.boundMouseMove = this.onMouseMove.bind(this);
         this.boundMouseUp = this.onMouseUp.bind(this);
@@ -68,17 +67,14 @@ export class DragHandler {
      * 新しい再生時間を計算（ループ対応）
      */
     private calculateNewTime(deltaX: number): number {
-        const sensitivityFactor = DRAG_SENSITIVITY_FACTOR;
         const pixelsPerRotation = this.calculatePixelsPerRotation();
-        const adjustedDelta = deltaX * sensitivityFactor;
-        const rotationProgress = adjustedDelta / pixelsPerRotation;
+        const rotationProgress = (deltaX * DRAG_SENSITIVITY_FACTOR) / pixelsPerRotation;
 
         const timeDelta = this.config.isClockwise
             ? -rotationProgress * this.state.duration
             : rotationProgress * this.state.duration;
 
-        let newTime = this.state.startTime + timeDelta;
-
+        const newTime = this.state.startTime + timeDelta;
         return ((newTime % this.state.duration) + this.state.duration) % this.state.duration;
     }
 
@@ -87,9 +83,7 @@ export class DragHandler {
      */
     private handleDragMove(currentX: number): void {
         if (!this.state.isDragging || !this.state.isPlayerReady) return;
-
-        if (this.state.startTime === undefined || this.state.startTime === null) return;
-        if (this.state.dragStartX === undefined || this.state.dragStartX === null) return;
+        if (this.state.startTime == null || this.state.dragStartX == null) return;
 
         const deltaX = currentX - this.state.dragStartX;
 
@@ -99,29 +93,23 @@ export class DragHandler {
         }
 
         const newTime = this.calculateNewTime(deltaX);
-
-        // UI更新を即座に実行
         this.onAngleUpdate(newTime);
 
         const now = performance.now();
-        const shouldThrottle = now - this.state.lastDragUpdate < DRAG_API_THROTTLE_MS;
+        if (now - this.state.lastDragUpdate < DRAG_API_THROTTLE_MS) return;
 
-        if (!shouldThrottle) {
-            this.state.lastDragUpdate = now;
+        this.state.lastDragUpdate = now;
 
-            if (this.state.pendingApiCall) {
-                cancelAnimationFrame(this.state.pendingApiCall);
-            }
-
-            this.state.pendingApiCall = requestAnimationFrame(() => {
-                if (this.state.isDragging && this.state.isPlayerReady) {
-                    this.state.player?.setCurrentTime(newTime).catch((err: any) => {
-                        console.warn('Vimeo API call ignored due to performance:', err);
-                    });
-                }
-                this.state.pendingApiCall = null;
-            });
+        if (this.state.pendingApiCall) {
+            cancelAnimationFrame(this.state.pendingApiCall);
         }
+
+        this.state.pendingApiCall = requestAnimationFrame(() => {
+            if (this.state.isDragging && this.state.isPlayerReady) {
+                this.state.player?.setCurrentTime(newTime).catch(() => {});
+            }
+            this.state.pendingApiCall = null;
+        });
     }
 
     /**
@@ -137,13 +125,10 @@ export class DragHandler {
         try {
             this.state.startTime = await this.state.player.getCurrentTime();
             this.state.isDragging = true;
+            this.state.dragStartX = startX;
 
             this.dragOverlay.classList.add('dragging');
             this.container.classList.add('dragging');
-
-            this.state.dragStartX = startX;
-
-            console.log('Drag started at time:', this.state.startTime, 'position:', startX);
             return true;
         } catch (error) {
             console.error('Failed to get current time:', error);
@@ -175,9 +160,6 @@ export class DragHandler {
         this.state.player?.pause();
     }
 
-    /**
-     * マウスダウンイベントハンドラー
-     */
     private async onMouseDown(e: MouseEvent): Promise<void> {
         if (this.state.isDragging) return;
 
@@ -189,25 +171,16 @@ export class DragHandler {
         e.preventDefault();
     }
 
-    /**
-     * マウスムーブイベントハンドラー
-     */
     private onMouseMove(e: MouseEvent): void {
         this.handleDragMove(e.clientX);
     }
 
-    /**
-     * マウスアップイベントハンドラー
-     */
     private onMouseUp(): void {
         this.handleDragEnd();
         document.removeEventListener('mousemove', this.boundMouseMove);
         document.removeEventListener('mouseup', this.boundMouseUp);
     }
 
-    /**
-     * タッチスタートイベントハンドラー
-     */
     private async onTouchStart(e: TouchEvent): Promise<void> {
         if (this.state.isDragging) return;
 
@@ -221,23 +194,15 @@ export class DragHandler {
         document.addEventListener('touchend', this.boundTouchEnd, { passive: false });
     }
 
-    /**
-     * タッチムーブイベントハンドラー
-     */
     private onTouchMove(e: TouchEvent): void {
         e.preventDefault();
         e.stopPropagation();
-
         this.handleDragMove(e.touches[0].clientX);
     }
 
-    /**
-     * タッチエンドイベントハンドラー
-     */
     private onTouchEnd(e: TouchEvent): void {
         e.preventDefault();
         e.stopPropagation();
-
         this.handleDragEnd();
         document.removeEventListener('touchmove', this.boundTouchMove);
         document.removeEventListener('touchend', this.boundTouchEnd);

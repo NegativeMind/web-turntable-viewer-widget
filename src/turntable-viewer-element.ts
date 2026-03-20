@@ -79,7 +79,7 @@ export class TurntableViewerElement extends HTMLElement {
                             </div>
                         </div>
                     </div>
-                    <a class="vimeo-link" href="#" target="_blank">View on Vimeo</a>
+                    <a class="vimeo-link" href="https://vimeo.com/${vimeoVideoId}" target="_blank">View on Vimeo</a>
                 </div>
             `;
 

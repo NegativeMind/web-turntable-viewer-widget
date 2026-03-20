@@ -28,17 +28,27 @@ export class VideoConfigManager {
     }
 
     /**
+     * コンテナ・iframe の属性からサイズを取得
+     */
+    private getIframeDimensions(): { videoWidth: number; videoHeight: number; htmlWidth: number; htmlHeight: number } {
+        return {
+            videoWidth: parseInt(this.container.getAttribute('video-width') || '0'),
+            videoHeight: parseInt(this.container.getAttribute('video-height') || '0'),
+            htmlWidth: parseInt(this.iframe.getAttribute('width') || '0'),
+            htmlHeight: parseInt(this.iframe.getAttribute('height') || '0'),
+        };
+    }
+
+    /**
      * 表示サイズに基づいてPIXELS_PER_ROTATIONを動的に計算
      */
     calculatePixelsPerRotation(): number {
-        const htmlWidth = parseInt(this.iframe.getAttribute('width') || '0');
+        const { htmlWidth } = this.getIframeDimensions();
         const containerWidth = this.container.clientWidth || 0;
         const iframeWidth = this.iframe.clientWidth || 0;
         const computedWidth = Math.max(containerWidth, iframeWidth) || 0;
 
         const finalWidth = htmlWidth || computedWidth || 320;
-
-        console.log(`Container width for calculation: ${finalWidth}px (html: ${htmlWidth}, container: ${containerWidth}, iframe: ${iframeWidth})`);
 
         let pixelsPerRotation = (finalWidth / PPR_BASE_SCREEN_SIZE_PX) * PPR_BASE_PIXELS;
 
@@ -46,20 +56,14 @@ export class VideoConfigManager {
             pixelsPerRotation *= PPR_SMALL_SCREEN_MULTIPLIER;
         }
 
-        pixelsPerRotation = Math.max(PPR_MIN, Math.min(PPR_MAX, pixelsPerRotation));
-
-        console.log(`Calculated PIXELS_PER_ROTATION: ${Math.round(pixelsPerRotation)} for width: ${finalWidth}px`);
-        return Math.round(pixelsPerRotation);
+        return Math.round(Math.max(PPR_MIN, Math.min(PPR_MAX, pixelsPerRotation)));
     }
 
     /**
      * 表示サイズに応じた動画品質選択
      */
     selectVideoQuality(): string {
-        const videoWidth = parseInt(this.container.getAttribute('video-width') || '0');
-        const videoHeight = parseInt(this.container.getAttribute('video-height') || '0');
-        const htmlWidth = parseInt(this.iframe.getAttribute('width') || '0');
-        const htmlHeight = parseInt(this.iframe.getAttribute('height') || '0');
+        const { videoWidth, videoHeight, htmlWidth, htmlHeight } = this.getIframeDimensions();
         const computedWidth = this.iframe.clientWidth || this.container.clientWidth || 0;
 
         const finalWidth = videoWidth || htmlWidth || computedWidth || 480;
@@ -67,36 +71,22 @@ export class VideoConfigManager {
 
         const area = finalWidth * finalHeight;
         const effectiveArea = Math.sqrt(area);
-
         const devicePixelRatio = window.devicePixelRatio || 1;
 
         let effectiveSize: number;
         if ((htmlWidth && htmlHeight) || (videoWidth && videoHeight)) {
-            const limitedDPR = Math.min(devicePixelRatio, QUALITY_DPR_LIMIT);
-            effectiveSize = effectiveArea * limitedDPR;
+            effectiveSize = effectiveArea * Math.min(devicePixelRatio, QUALITY_DPR_LIMIT);
         } else {
             effectiveSize = effectiveArea * devicePixelRatio;
         }
 
-        let selectedQuality = '240p';
-        if (effectiveSize <= 240) {
-            selectedQuality = '240p';
-        } else if (effectiveSize <= 360) {
-            selectedQuality = '360p';
-        } else if (effectiveSize <= 480) {
-            selectedQuality = '540p';
-        } else if (effectiveSize <= 960) {
-            selectedQuality = '720p';
-        } else if (effectiveSize <= 1280) {
-            selectedQuality = '1080p';
-        } else if (effectiveSize <= 1920) {
-            selectedQuality = '2k';
-        } else {
-            selectedQuality = '4k';
-        }
-
-        console.log(`Selected quality: ${selectedQuality} for effective size: ${effectiveSize}px (${finalWidth}x${finalHeight})`);
-        return selectedQuality;
+        if (effectiveSize <= 240) return '240p';
+        if (effectiveSize <= 360) return '360p';
+        if (effectiveSize <= 480) return '540p';
+        if (effectiveSize <= 960) return '720p';
+        if (effectiveSize <= 1280) return '1080p';
+        if (effectiveSize <= 1920) return '2k';
+        return '4k';
     }
 
     /**
@@ -104,11 +94,7 @@ export class VideoConfigManager {
      */
     buildVideoUrl(): string {
         const quality = this.selectVideoQuality();
-
-        const videoWidth = parseInt(this.container.getAttribute('video-width') || '0');
-        const videoHeight = parseInt(this.container.getAttribute('video-height') || '0');
-        const htmlWidth = parseInt(this.iframe.getAttribute('width') || '0');
-        const htmlHeight = parseInt(this.iframe.getAttribute('height') || '0');
+        const { videoWidth, videoHeight, htmlWidth, htmlHeight } = this.getIframeDimensions();
 
         let finalWidth = videoWidth || htmlWidth || 480;
         let finalHeight = videoHeight || htmlHeight || finalWidth;
@@ -131,7 +117,6 @@ export class VideoConfigManager {
             this.iframe.style.height = finalHeight + 'px';
             this.iframe.style.maxWidth = 'none';
             this.iframe.style.display = 'block';
-            console.log(`Applied direct CSS styles: ${finalWidth}x${finalHeight}`);
         }
 
         const params = new URLSearchParams({
@@ -146,14 +131,12 @@ export class VideoConfigManager {
             muted: '1',
             loop: '1',
             controls: '0',
-            quality: quality,
+            quality,
             responsive: '0',
             dnt: '1'
         });
 
-        const url = `https://player.vimeo.com/video/${this.config.videoId}?${params.toString()}`;
-        console.log(`Video URL set: ${url} (Size: ${finalWidth}x${finalHeight}, Screen: ${screenWidth})`);
-        return url;
+        return `https://player.vimeo.com/video/${this.config.videoId}?${params.toString()}`;
     }
 
     /**
@@ -166,7 +149,6 @@ export class VideoConfigManager {
             }
 
             const oembedUrl = `https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.config.videoId}`;
-            console.log(`Fetching video info from: ${oembedUrl}`);
 
             await delay(Math.random() * 500);
 
@@ -176,9 +158,7 @@ export class VideoConfigManager {
             const response = await fetch(oembedUrl, {
                 signal: controller.signal,
                 referrerPolicy: 'no-referrer',
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
 
             clearTimeout(timeoutId);
@@ -205,14 +185,10 @@ export class VideoConfigManager {
                 throw new Error('Invalid video dimensions in API response');
             }
 
-            const aspectRatio = data.height / data.width;
-
-            console.log(`API Video dimensions: ${data.width}x${data.height}, aspect ratio: ${aspectRatio.toFixed(3)}`);
-
             return {
                 width: data.width,
                 height: data.height,
-                aspectRatio: aspectRatio,
+                aspectRatio: data.height / data.width,
                 title: data.title || 'Untitled Video'
             };
         } catch (error) {
@@ -245,8 +221,6 @@ export class VideoConfigManager {
             this.iframe.style.visibility = 'hidden';
 
             if (currentWidth && currentHeight) {
-                // 両方指定済み：API不要
-                console.log(`Both width and height specified: ${currentWidth}x${currentHeight}`);
                 this.applySizeToIframe(currentWidth, currentHeight, onAdjustOverlay);
                 return;
             }
@@ -255,26 +229,19 @@ export class VideoConfigManager {
             const videoInfo = await this.getVideoInfoFromAPI();
 
             if (currentWidth || currentHeight) {
-                // 片方のみ指定：アスペクト比から補完
                 let finalW = currentWidth;
                 let finalH = currentHeight;
                 if (currentWidth && !currentHeight) {
                     finalH = Math.round(currentWidth * videoInfo.aspectRatio);
-                    console.log(`Set height from width: ${finalW}x${finalH} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
                 } else {
                     finalW = Math.round(currentHeight / videoInfo.aspectRatio);
-                    console.log(`Set width from height: ${finalW}x${finalH} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
                 }
                 this.applySizeToIframe(finalW, finalH, onAdjustOverlay);
             } else {
-                // 両方未指定：デフォルト幅 + アスペクト比
                 const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
                 const calculatedHeight = Math.round(defaultWidth * videoInfo.aspectRatio);
-                console.log(`Set default size: ${defaultWidth}x${calculatedHeight} (aspect ratio: ${videoInfo.aspectRatio.toFixed(3)})`);
                 this.applySizeToIframe(defaultWidth, calculatedHeight, onAdjustOverlay);
             }
-
-            console.log('setInitialSizeFromAPI completed');
         } catch (error) {
             console.warn('Could not set initial size from API:', error);
             this.setInitialSizeFallback(onAdjustOverlay);
@@ -295,23 +262,18 @@ export class VideoConfigManager {
             if (currentWidth && currentHeight) {
                 finalW = currentWidth;
                 finalH = currentHeight;
-                console.log(`Fallback: Both width and height specified: ${finalW}x${finalH}`);
             } else if (currentWidth && !currentHeight) {
                 finalW = currentWidth;
                 finalH = Math.round(currentWidth * DEFAULT_ASPECT_RATIO);
-                console.log(`Fallback: Set height from width: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             } else if (currentHeight && !currentWidth) {
                 finalH = currentHeight;
                 finalW = Math.round(currentHeight / DEFAULT_ASPECT_RATIO);
-                console.log(`Fallback: Set width from height: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             } else {
                 finalW = DEFAULT_VIDEO_WIDTH_PX;
                 finalH = Math.round(DEFAULT_VIDEO_WIDTH_PX * DEFAULT_ASPECT_RATIO);
-                console.log(`Fallback: Set default size: ${finalW}x${finalH} (16:9 default aspect ratio)`);
             }
 
             this.applySizeToIframe(finalW, finalH, onAdjustOverlay);
-            console.log('Container and iframe size ready (fallback), made visible');
         } catch (error) {
             console.warn('Could not set fallback initial size:', error);
         }
@@ -333,7 +295,6 @@ export class VideoConfigManager {
      * 動画プレイヤーのセットアップ
      */
     setupVideoPlayer(): void {
-        const videoUrl = this.buildVideoUrl();
-        this.iframe.src = videoUrl;
+        this.iframe.src = this.buildVideoUrl();
     }
 }
