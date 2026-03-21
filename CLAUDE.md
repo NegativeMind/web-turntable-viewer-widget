@@ -5,7 +5,7 @@
 Vimeoの360度ターンテーブル動画をインタラクティブに操作できるWeb Componentウィジェット。
 ユーザーがドラッグすることでフレームごとに回転操作が可能。
 
-- **バージョン:** 0.1.9-beta
+- **バージョン:** 0.2.0-beta
 - **ライセンス:** MIT
 - **配布:** jsDelivr CDN経由（GitHubリリースから自動）
 
@@ -170,10 +170,8 @@ git push origin vX.X.X-beta
 
 - **TypeScript 5.7+** (strict: 一部無効、`strictNullChecks: false`)
 - **Vite 5.4+** — ビルドツール
-- **Web Components** — フレームワークなし、純粋なブラウザAPI
+- **Web Components** — 軽量フレームワーク・ネイティブAPIを活用
 - **Vimeo Player API** — ピア依存（ユーザーが別途ロード）
-
-**使用しないもの:** React, Vue, Angular, jQuery、その他重いフレームワーク
 
 ## コードパターン
 
@@ -232,4 +230,3 @@ progressManager.showError(getErrorMessage(error));
 - Shadow DOMのカプセル化を破る
 - CSSで `all: unset` を使う（iframeが壊れる）
 - Shadow DOM内部で不要な `!important` を使う
-- jQueryや重いフレームワークを提案する

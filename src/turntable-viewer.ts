@@ -6,7 +6,7 @@ import { VideoConfigManager } from './video-config-manager';
 import { PlayerInitializer } from './player-initializer';
 import { DragHandler } from './drag-handler';
 import { UIManager } from './ui-manager';
-import { getErrorMessage, delay } from './utils';
+import { getErrorMessage, delay, withTimeout } from './utils';
 import {
     PLAYER_LOAD_DELAY_MS,
     PLAYER_RELOAD_EXTRA_DELAY_MS,
@@ -26,7 +26,8 @@ export class TurntableViewer {
     private state: TurntableState;
     private isReloading: boolean = false;
     private root: Document | ShadowRoot;
-    private boundOnWindowResize: () => Promise<void>;
+    private resizeObserver: ResizeObserver | null = null;
+    private resizeDebounceTimer: number | null = null;
 
     // マネージャークラス
     private progressManager: ProgressManager;
@@ -60,10 +61,10 @@ export class TurntableViewer {
 
         const loadingOverlay = this.container.querySelector<HTMLElement>('.loading-overlay');
         const loadingText = this.container.querySelector<HTMLElement>('.loading-text');
-        const progressFill = this.container.querySelector<HTMLElement>('.progress-fill');
+        const progressBar = this.container.querySelector<HTMLProgressElement>('progress.progress-bar');
         const progressText = this.container.querySelector<HTMLElement>('.progress-text');
 
-        if (!loadingOverlay || !loadingText || !progressFill || !progressText) {
+        if (!loadingOverlay || !loadingText || !progressBar || !progressText) {
             throw new Error('Required loading elements not found in container');
         }
 
@@ -92,7 +93,7 @@ export class TurntableViewer {
             this.iframe,
             loadingOverlay,
             loadingText,
-            progressFill,
+            progressBar,
             progressText,
             this.config
         );
@@ -110,7 +111,6 @@ export class TurntableViewer {
             this.handleReload.bind(this)
         );
 
-        this.boundOnWindowResize = this.onWindowResize.bind(this);
         this.initialize();
     }
 
@@ -270,7 +270,7 @@ export class TurntableViewer {
             await this.setupVideoSource();
             this.state.player = await this.createAndLoadPlayer();
             await this.configurePlayer(this.state.player);
-            this.finalizePlayerSetup();
+            await this.finalizePlayerSetup();
         } catch (error) {
             this.handlePlayerInitError(error);
         }
@@ -319,17 +319,21 @@ export class TurntableViewer {
             () => this.progressManager.adjustLoadingOverlaySize()
         );
         await this.playerInitializer.applyPlayerSettings(player);
-        await this.playerInitializer.preloadVideo(
-            player,
-            this.state.duration,
-            (progress, message) => this.progressManager.updateProgress(progress, message)
-        );
         await this.playerInitializer.setInitialPlayerState(player);
     }
 
     /** 初期化完了後の状態更新とUI処理 */
-    private finalizePlayerSetup(): void {
+    private async finalizePlayerSetup(): Promise<void> {
         this.uiManager.updateAngle(0);
+        this.progressManager.updateProgress(95, 'Verifying player...');
+
+        // ドラッグの前提となる getCurrentTime() が応答するまで待機してからオーバーレイを隠す
+        try {
+            await withTimeout(this.state.player!.getCurrentTime(), 5000, 'Player readiness check timed out');
+        } catch {
+            // タイムアウトしても続行
+        }
+
         this.state.isPlayerReady = true;
         this.progressManager.updateProgress(100, 'Initialization complete!');
         setTimeout(() => {
@@ -371,13 +375,26 @@ export class TurntableViewer {
         );
 
         this.dragHandler.attachEventListeners();
-        window.addEventListener('resize', this.boundOnWindowResize);
+
+        this.resizeObserver = new ResizeObserver(() => {
+            // 連続発火を防ぐデバウンス（500ms）
+            if (this.resizeDebounceTimer !== null) clearTimeout(this.resizeDebounceTimer);
+            this.resizeDebounceTimer = window.setTimeout(() => {
+                this.resizeDebounceTimer = null;
+                this.onContainerResize();
+            }, 500);
+        });
+        this.resizeObserver.observe(this.container);
     }
 
     /**
-     * ウィンドウリサイズイベントハンドラー
+     * コンテナリサイズ時の品質切替
+     * 初期化中・リロード中・ドラッグ中は無視して並走を防ぐ。
      */
-    async onWindowResize(): Promise<void> {
+    private async onContainerResize(): Promise<void> {
+        // プレーヤーが未準備（初期化中含む）またはドラッグ中・リロード中は無視
+        if (!this.state.isPlayerReady || this.isReloading || this.state.isDragging) return;
+
         const newQuality = this.videoConfigManager.selectVideoQuality();
         const currentSrc = this.iframe.src;
 
@@ -394,6 +411,11 @@ export class TurntableViewer {
         if (this.dragHandler) {
             this.dragHandler.removeEventListeners();
         }
-        window.removeEventListener('resize', this.boundOnWindowResize);
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
+        if (this.resizeDebounceTimer !== null) {
+            clearTimeout(this.resizeDebounceTimer);
+            this.resizeDebounceTimer = null;
+        }
     }
 }

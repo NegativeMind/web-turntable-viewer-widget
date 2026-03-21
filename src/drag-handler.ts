@@ -3,6 +3,17 @@ import { DRAG_SENSITIVITY_FACTOR, DRAG_EXTREME_DELTA_PX, DRAG_API_THROTTLE_MS } 
 
 /**
  * ドラッグ操作とイベント処理を管理するクラス
+ *
+ * シーク戦略:
+ *   - DRAG_API_THROTTLE_MS 間隔でスロットリングし、直接 setCurrentTime を呼び出す。
+ *   - 非同期ループは使用しない（isSeeking フラグが詰まると 2 回目以降のドラッグが
+ *     ブロックされるため）。
+ *
+ * イベント戦略:
+ *   - pointerdown は dragOverlay で受け取る（コンポーネント生存期間）。
+ *   - pointermove / pointerup はドラッグ開始後のみ document に登録。
+ *   - pointerId フィルタリングで、タッチパッド等の誤操作によるドラッグ中断を防ぐ。
+ *   - AbortController で全リスナーを一括解除。
  */
 export class DragHandler {
     private container: HTMLElement;
@@ -12,13 +23,10 @@ export class DragHandler {
     private calculatePixelsPerRotation: () => number;
     private onAngleUpdate: (seconds: number) => void;
 
-    // バインド済みのイベントハンドラー
-    private boundMouseDown: (e: MouseEvent) => Promise<void>;
-    private boundMouseMove: (e: MouseEvent) => void;
-    private boundMouseUp: () => void;
-    private boundTouchStart: (e: TouchEvent) => Promise<void>;
-    private boundTouchMove: (e: TouchEvent) => void;
-    private boundTouchEnd: (e: TouchEvent) => void;
+    /** コンポーネント生存期間のリスナー管理 */
+    private abortController: AbortController | null = null;
+    /** ドラッグセッション中のドキュメントリスナー管理 */
+    private dragAbortController: AbortController | null = null;
 
     constructor(
         container: HTMLElement,
@@ -34,38 +42,24 @@ export class DragHandler {
         this.config = config;
         this.calculatePixelsPerRotation = calculatePixelsPerRotation;
         this.onAngleUpdate = onAngleUpdate;
-
-        this.boundMouseDown = this.onMouseDown.bind(this);
-        this.boundMouseMove = this.onMouseMove.bind(this);
-        this.boundMouseUp = this.onMouseUp.bind(this);
-        this.boundTouchStart = this.onTouchStart.bind(this);
-        this.boundTouchMove = this.onTouchMove.bind(this);
-        this.boundTouchEnd = this.onTouchEnd.bind(this);
     }
 
-    /**
-     * イベントリスナーを追加
-     */
     attachEventListeners(): void {
-        this.dragOverlay.addEventListener('mousedown', this.boundMouseDown);
-        this.dragOverlay.addEventListener('touchstart', this.boundTouchStart, { passive: false });
+        this.abortController = new AbortController();
+        this.dragOverlay.addEventListener(
+            'pointerdown',
+            (e) => this.onPointerDown(e),
+            { signal: this.abortController.signal }
+        );
     }
 
-    /**
-     * イベントリスナーを削除
-     */
     removeEventListeners(): void {
-        this.dragOverlay.removeEventListener('mousedown', this.boundMouseDown);
-        this.dragOverlay.removeEventListener('touchstart', this.boundTouchStart);
-        document.removeEventListener('mousemove', this.boundMouseMove);
-        document.removeEventListener('mouseup', this.boundMouseUp);
-        document.removeEventListener('touchmove', this.boundTouchMove);
-        document.removeEventListener('touchend', this.boundTouchEnd);
+        this.dragAbortController?.abort();
+        this.dragAbortController = null;
+        this.abortController?.abort();
+        this.abortController = null;
     }
 
-    /**
-     * 新しい再生時間を計算（ループ対応）
-     */
     private calculateNewTime(deltaX: number): number {
         const pixelsPerRotation = this.calculatePixelsPerRotation();
         const rotationProgress = (deltaX * DRAG_SENSITIVITY_FACTOR) / pixelsPerRotation;
@@ -78,9 +72,6 @@ export class DragHandler {
         return ((newTime % this.state.duration) + this.state.duration) % this.state.duration;
     }
 
-    /**
-     * ドラッグ操作の共通処理
-     */
     private handleDragMove(currentX: number): void {
         if (!this.state.isDragging || !this.state.isPlayerReady) return;
         if (this.state.startTime == null || this.state.dragStartX == null) return;
@@ -93,28 +84,18 @@ export class DragHandler {
         }
 
         const newTime = this.calculateNewTime(deltaX);
+
+        // 角度表示は常に即時更新
         this.onAngleUpdate(newTime);
 
+        // Vimeo API 呼び出しはスロットリング
         const now = performance.now();
         if (now - this.state.lastDragUpdate < DRAG_API_THROTTLE_MS) return;
-
         this.state.lastDragUpdate = now;
 
-        if (this.state.pendingApiCall) {
-            cancelAnimationFrame(this.state.pendingApiCall);
-        }
-
-        this.state.pendingApiCall = requestAnimationFrame(() => {
-            if (this.state.isDragging && this.state.isPlayerReady) {
-                this.state.player?.setCurrentTime(newTime).catch(() => {});
-            }
-            this.state.pendingApiCall = null;
-        });
+        this.state.player?.setCurrentTime(newTime).catch(() => {});
     }
 
-    /**
-     * ドラッグ開始の共通処理
-     */
     private async handleDragStart(startX: number): Promise<boolean> {
         if (!this.state.isPlayerReady) return false;
 
@@ -126,6 +107,7 @@ export class DragHandler {
             this.state.startTime = await this.state.player.getCurrentTime();
             this.state.isDragging = true;
             this.state.dragStartX = startX;
+            this.state.lastDragUpdate = 0;
 
             this.dragOverlay.classList.add('dragging');
             this.container.classList.add('dragging');
@@ -140,71 +122,55 @@ export class DragHandler {
         }
     }
 
-    /**
-     * ドラッグ終了の共通処理
-     */
     private handleDragEnd(): void {
         if (!this.state.isDragging) return;
 
         this.state.isDragging = false;
+        this.state.lastDragUpdate = 0;
 
         this.dragOverlay.classList.remove('dragging');
         this.container.classList.remove('dragging');
-
-        if (this.state.pendingApiCall) {
-            cancelAnimationFrame(this.state.pendingApiCall);
-            this.state.pendingApiCall = null;
-        }
-
         this.dragOverlay.style.cursor = 'grab';
         this.state.player?.pause();
     }
 
-    private async onMouseDown(e: MouseEvent): Promise<void> {
+    private async onPointerDown(e: PointerEvent): Promise<void> {
         if (this.state.isDragging) return;
+
+        // リロードボタン上のポインターダウンはドラッグ処理に渡さない
+        if ((e.target as HTMLElement).closest('.reload-button')) return;
 
         const success = await this.handleDragStart(e.clientX);
         if (!success) return;
 
-        document.addEventListener('mousemove', this.boundMouseMove);
-        document.addEventListener('mouseup', this.boundMouseUp);
-        e.preventDefault();
+        // await 中にコンポーネントが破棄された場合（リロードなど）は中断
+        if (!this.abortController) return;
+
+        // pointerId でフィルタリングし、タッチパッドや他のポインターの
+        // pointerup でドラッグが誤終了するのを防ぐ
+        const activePointerId = e.pointerId;
+
+        this.dragAbortController = new AbortController();
+        const { signal } = this.dragAbortController;
+
+        document.addEventListener('pointermove', (ev) => {
+            if (ev.pointerId === activePointerId) this.onPointerMove(ev);
+        }, { signal });
+        document.addEventListener('pointerup', (ev) => {
+            if (ev.pointerId === activePointerId) this.onPointerUp(ev);
+        }, { signal });
+        document.addEventListener('pointercancel', (ev) => {
+            if (ev.pointerId === activePointerId) this.onPointerUp(ev);
+        }, { signal });
     }
 
-    private onMouseMove(e: MouseEvent): void {
+    private onPointerMove(e: PointerEvent): void {
         this.handleDragMove(e.clientX);
     }
 
-    private onMouseUp(): void {
+    private onPointerUp(_e: PointerEvent): void {
         this.handleDragEnd();
-        document.removeEventListener('mousemove', this.boundMouseMove);
-        document.removeEventListener('mouseup', this.boundMouseUp);
-    }
-
-    private async onTouchStart(e: TouchEvent): Promise<void> {
-        if (this.state.isDragging) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const success = await this.handleDragStart(e.touches[0].clientX);
-        if (!success) return;
-
-        document.addEventListener('touchmove', this.boundTouchMove, { passive: false });
-        document.addEventListener('touchend', this.boundTouchEnd, { passive: false });
-    }
-
-    private onTouchMove(e: TouchEvent): void {
-        e.preventDefault();
-        e.stopPropagation();
-        this.handleDragMove(e.touches[0].clientX);
-    }
-
-    private onTouchEnd(e: TouchEvent): void {
-        e.preventDefault();
-        e.stopPropagation();
-        this.handleDragEnd();
-        document.removeEventListener('touchmove', this.boundTouchMove);
-        document.removeEventListener('touchend', this.boundTouchEnd);
+        this.dragAbortController?.abort();
+        this.dragAbortController = null;
     }
 }

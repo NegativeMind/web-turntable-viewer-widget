@@ -279,59 +279,41 @@
 }
 
 .progress-bar {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
+    width: 0;
     height: 8px;
+    border: none;
+    border-radius: 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    display: block;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.progress-bar::-webkit-progress-bar {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-    overflow: hidden;
-    position: relative;
 }
 
-.progress-fill {
-    height: 100%;
+.progress-bar::-webkit-progress-value {
     background: linear-gradient(90deg, #4CAF50, #81C784);
     border-radius: 4px;
-    width: 0%;
     transition: width 0.3s ease;
-    position: relative;
 }
 
-.progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
+.progress-bar::-moz-progress-bar {
+    background: linear-gradient(90deg, #4CAF50, #81C784);
+    border-radius: 4px;
+    transition: width 0.3s ease;
 }
 
 .progress-text {
     font-size: 14px;
     font-weight: bold;
     min-width: 35px;
-}
-
-/* Vimeoビューアラッパー */
-.vimeo-viewer-wrapper {
-    /* 基本リセット */
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-
-    display: inline-block;
-    width: auto;
 }
 
 /* Vimeoリンク */
@@ -450,8 +432,13 @@
 
     .progress-bar {
         height: 6px;
-        flex: 1;
-        min-width: 120px;
+        flex: 1 1 0;
+        min-width: 0;
+        width: 0;
+        border: none;
+        appearance: none;
+        -webkit-appearance: none;
+        box-sizing: border-box;
     }
 
     .progress-text {

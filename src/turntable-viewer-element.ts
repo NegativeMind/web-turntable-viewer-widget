@@ -73,7 +73,7 @@ export class TurntableViewerElement extends HTMLElement {
                             <div class="loading-content">
                                 <div class="loading-text">Loading turntable...</div>
                                 <div class="progress-container">
-                                    <div class="progress-bar"><div class="progress-fill"></div></div>
+                                    <progress class="progress-bar" max="100" value="0"></progress>
                                     <div class="progress-text">0%</div>
                                 </div>
                             </div>
