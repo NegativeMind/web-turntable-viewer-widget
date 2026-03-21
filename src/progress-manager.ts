@@ -4,8 +4,6 @@
  */
 import type { TurntableConfig } from './types';
 import {
-    DEFAULT_VIDEO_WIDTH_PX,
-    DEFAULT_ASPECT_RATIO,
     LOADING_STALL_TIMEOUT_MS,
     LOADING_TOTAL_TIMEOUT_MS,
 } from './constants';
@@ -13,7 +11,7 @@ import {
 export class ProgressManager {
     private loadingOverlay: HTMLElement;
     private loadingText: HTMLElement;
-    private progressFill: HTMLElement;
+    private progressBar: HTMLProgressElement;
     private progressText: HTMLElement;
     private container: HTMLElement;
     private iframe: HTMLIFrameElement;
@@ -29,7 +27,7 @@ export class ProgressManager {
         iframe: HTMLIFrameElement,
         loadingOverlay: HTMLElement,
         loadingText: HTMLElement,
-        progressFill: HTMLElement,
+        progressBar: HTMLProgressElement,
         progressText: HTMLElement,
         config: TurntableConfig
     ) {
@@ -37,7 +35,7 @@ export class ProgressManager {
         this.iframe = iframe;
         this.loadingOverlay = loadingOverlay;
         this.loadingText = loadingText;
-        this.progressFill = progressFill;
+        this.progressBar = progressBar;
         this.progressText = progressText;
         this.config = config;
     }
@@ -46,7 +44,7 @@ export class ProgressManager {
      * プログレスバーを更新
      */
     updateProgress(percentage: number, text: string | null = null): void {
-        this.progressFill.style.width = `${percentage}%`;
+        this.progressBar.value = percentage;
         this.progressText.textContent = `${Math.round(percentage)}%`;
 
         if (text) {
@@ -93,20 +91,23 @@ export class ProgressManager {
     }
 
     /**
-     * ローディングオーバーレイのサイズをiframe要素に合わせて調整
+     * ローディングオーバーレイのサイズ調整
+     * CSS で position: absolute; width: 100%; height: 100% を使用しているため、
+     * インラインスタイルでの上書きは行わない。
+     * iframe の offsetWidth/offsetHeight が確定済みであれば明示的に合わせる。
+     * 未確定（0）の場合は CSS に委ねてインラインスタイルをクリアする。
      */
     adjustLoadingOverlaySize(): void {
-        const iframeWidth = parseInt(this.iframe.getAttribute('width') || '0');
-        const iframeHeight = parseInt(this.iframe.getAttribute('height') || '0');
+        const renderedWidth = this.iframe.offsetWidth;
+        const renderedHeight = this.iframe.offsetHeight;
 
-        if (iframeWidth && iframeHeight) {
-            this.loadingOverlay.style.width = `${iframeWidth}px`;
-            this.loadingOverlay.style.height = `${iframeHeight}px`;
+        if (renderedWidth > 0 && renderedHeight > 0) {
+            this.loadingOverlay.style.width = `${renderedWidth}px`;
+            this.loadingOverlay.style.height = `${renderedHeight}px`;
         } else {
-            const defaultWidth = DEFAULT_VIDEO_WIDTH_PX;
-            const defaultHeight = Math.round(defaultWidth * DEFAULT_ASPECT_RATIO);
-            this.loadingOverlay.style.width = `${defaultWidth}px`;
-            this.loadingOverlay.style.height = `${defaultHeight}px`;
+            // レンダリング前は CSS の width: 100%; height: 100% に委ねる
+            this.loadingOverlay.style.width = '';
+            this.loadingOverlay.style.height = '';
         }
     }
 

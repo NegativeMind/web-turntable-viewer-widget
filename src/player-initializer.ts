@@ -124,6 +124,10 @@ export class PlayerInitializer {
         try {
             onProgress?.(85, 'Buffering video...');
 
+            // シークが機能するには play() でバッファリングを開始する必要がある
+            await player.play().catch(() => {});
+            await delay(PLAYER_PRELOAD_DELAY_MS);
+
             for (let i = 0; i < PLAYER_PRELOAD_POINTS.length; i++) {
                 const point = PLAYER_PRELOAD_POINTS[i];
                 const seekTime = duration * point;
@@ -137,6 +141,7 @@ export class PlayerInitializer {
             }
 
             await withTimeout(player.setCurrentTime(0), PLAYER_PRELOAD_TIMEOUT_MS, 'Preload final seek timeout');
+            await player.pause().catch(() => {});
             return true;
         } catch (error) {
             console.warn('Video buffer preload skipped:', getErrorMessage(error));
@@ -152,8 +157,8 @@ export class PlayerInitializer {
 
         const actions = [
             { name: 'play', action: () => player.play(), optional: true },
-            { name: 'pause', action: () => player.pause(), optional: false },
-            { name: 'seek to start', action: () => player.setCurrentTime(0), optional: false }
+            { name: 'pause', action: () => player.pause(), optional: true },
+            { name: 'seek to start', action: () => player.setCurrentTime(0), optional: true }
         ];
 
         for (const action of actions) {

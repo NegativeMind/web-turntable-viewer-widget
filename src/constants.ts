@@ -79,7 +79,7 @@ export const PLAYER_PRELOAD_TIMEOUT_MS = 5_000;
 export const PLAYER_PRELOAD_DELAY_MS = 300;
 
 /** 事前バッファリングするシーク位置（動画全体に対する割合） */
-export const PLAYER_PRELOAD_POINTS: readonly number[] = [0, 0.5];
+export const PLAYER_PRELOAD_POINTS: readonly number[] = [0.5];
 
 // ─── 初期化・リロード遅延 ────────────────────────────────────────────────────
 
