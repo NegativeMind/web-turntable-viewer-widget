@@ -361,14 +361,9 @@
 }
 
 /* スマホ対応 */
+/* :host のモバイル切り替えは turntable-viewer-element.ts の JS で処理 */
+/* (CSS @media 内の :host は Linux ビルド環境で削除されるため) */
 @media (max-width: 768px) {
-    /* :host が inline-block のままだと width: 100% の基準が iframe 幅(480px)になるため
-       display: block に変更してページ幅を基準にする */
-    :host {
-        display: block !important;
-        width: 100% !important;
-    }
-
     .turntable-wrapper {
         display: block;
         width: 100%;

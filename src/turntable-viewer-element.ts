@@ -9,6 +9,8 @@ import { TurntableViewer } from './turntable-viewer';
 export class TurntableViewerElement extends HTMLElement {
     private viewer: TurntableViewer | null = null;
     private shadowContainer: HTMLElement | null = null;
+    private mq: MediaQueryList | null = null;
+    private mqHandler: ((e: MediaQueryListEvent) => void) | null = null;
 
     static get observedAttributes() {
         return ['vimeo-video-id', 'clockwise-rotation', 'width', 'height', 'show-angle'];
@@ -22,6 +24,10 @@ export class TurntableViewerElement extends HTMLElement {
     }
 
     connectedCallback() {
+        this.applyMobileHostStyle(window.matchMedia('(max-width: 768px)'));
+        this.mq = window.matchMedia('(max-width: 768px)');
+        this.mqHandler = (e: MediaQueryListEvent) => this.applyMobileHostStyle(e);
+        this.mq.addEventListener('change', this.mqHandler);
         this.render();
         this.initializeViewer();
     }
@@ -30,6 +36,25 @@ export class TurntableViewerElement extends HTMLElement {
         if (this.viewer) {
             this.viewer.destroy();
             this.viewer = null;
+        }
+        if (this.mq && this.mqHandler) {
+            this.mq.removeEventListener('change', this.mqHandler);
+            this.mq = null;
+            this.mqHandler = null;
+        }
+    }
+
+    /**
+     * モバイル時にホスト要素を block/100% に切り替える
+     * CSS @media 内の :host がビルド時に削除されるため JS で代替処理
+     */
+    private applyMobileHostStyle(mq: MediaQueryList | MediaQueryListEvent) {
+        if (mq.matches) {
+            this.style.setProperty('display', 'block', 'important');
+            this.style.setProperty('width', '100%', 'important');
+        } else {
+            this.style.removeProperty('display');
+            this.style.removeProperty('width');
         }
     }
 
