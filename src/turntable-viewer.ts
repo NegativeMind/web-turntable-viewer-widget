@@ -1,5 +1,3 @@
-// CSSをインポート
-import './turntable-viewer.css';
 import type { TurntableConfig, TurntableState, VimeoPlayer } from './types';
 import { ProgressManager } from './progress-manager';
 import { VideoConfigManager } from './video-config-manager';
