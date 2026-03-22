@@ -37,6 +37,9 @@ jobs:
 
           TAG_NAME="${GITHUB_REF_NAME}"
 
+          # sparse-checkout を無効化して dist/ をインデックスに含める
+          git sparse-checkout disable || true
+
           # main ブランチに切り替えて最新を取得
           git checkout main
           git pull origin main
