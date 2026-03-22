@@ -40,15 +40,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # .gitignore の dist/ 除外を一時的に無効化してステージングを確実にする
+          # git checkout -- .gitignore はコミット後に実行する（先に戻すとステージがクリアされる）
           sed -i 's|^dist/$||' .gitignore
 
           git add dist/
-          git checkout -- .gitignore
 
           if git diff --cached --quiet; then
+            git checkout -- .gitignore
             echo "No changes to dist/, skipping commit."
             exit 0
           fi
 
           git commit -m "chore: Update build artifacts [skip ci]"
+          git checkout -- .gitignore
           git push

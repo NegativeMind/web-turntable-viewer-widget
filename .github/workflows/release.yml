@@ -44,14 +44,16 @@ jobs:
           TAG_NAME="${GITHUB_REF_NAME}"
 
           # .gitignore の dist/ 除外を一時的に無効化してステージング
+          # git checkout -- .gitignore はコミット後に実行する（先に戻すとステージがクリアされる）
           sed -i 's|^dist/$||' .gitignore
           git add dist/
-          git checkout -- .gitignore
 
           if git diff --cached --quiet; then
+            git checkout -- .gitignore
             echo "dist/ is already up to date on main."
           else
             git commit -m "chore: Update build artifacts for ${TAG_NAME}"
+            git checkout -- .gitignore
             git push origin main
           fi
 
