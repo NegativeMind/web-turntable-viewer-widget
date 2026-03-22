@@ -47,7 +47,7 @@ export default defineConfig({
     },
     // 開発サーバー設定
     server: {
-        open: '/test-local.html',
+        open: true,
         port: 3000
     },
     // プレビューサーバー設定

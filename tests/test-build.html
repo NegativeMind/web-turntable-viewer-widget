@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Turntable Viewer - ローカルdevテスト</title>
+    <title>Web Turntable Viewer - ローカルビルドテスト (dist/)</title>
 
     <!-- Vimeo Player API（Web Componentより先に読み込む） -->
     <script src="https://player.vimeo.com/api/player.js"></script>
 
-    <!-- Web Turntable Viewer Widget (開発サーバー経由でsrcを直接読み込み) -->
-    <script type="module" src="/src/index.ts"></script>
+    <!-- Web Turntable Viewer Widget (ローカルビルド dist/ から読み込み) -->
+    <script type="module" src="/dist/turntable-viewer.js"></script>
 
     <style>
         body {
@@ -22,22 +22,22 @@
         }
 
         .test-info {
-            background: #d1ecf1;
+            background: #d4edda;
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
-            border-left: 4px solid #0c5460;
+            border-left: 4px solid #28a745;
         }
 
         .test-info h1 {
             margin: 0 0 10px 0;
             font-size: 1.8rem;
-            color: #0c5460;
+            color: #155724;
         }
 
         .test-info p {
             margin: 5px 0;
-            color: #0c5460;
+            color: #155724;
         }
 
         .test-info code {
@@ -56,7 +56,7 @@
         }
 
         .embed-section {
-            border: 2px dashed #17a2b8;
+            border: 2px dashed #28a745;
             padding: 15px;
             margin: 15px 0;
             background: #f8f9fa;
@@ -67,16 +67,16 @@
         .section-title {
             margin: 0 0 10px 0;
             font-size: 1.2rem;
-            color: #17a2b8;
+            color: #28a745;
         }
 
         .note {
-            background: #d1ecf1;
+            background: #d4edda;
             padding: 10px;
             border-radius: 3px;
             margin: 15px 0;
             font-size: 0.9em;
-            color: #0c5460;
+            color: #155724;
         }
 
         /* レスポンシブ対応 */
@@ -103,10 +103,10 @@
 
 <body>
     <div class="test-info">
-        <h1>🔧 ローカルdevテスト</h1>
-        <p>このページは、<code>npm run dev</code> 実行中にソースコードを直接読み込んで動作確認するページです。</p>
-        <p>使用ファイル: <code>/src/index.ts</code>（Vite dev server 経由）</p>
-        <p>バージョン: <code>v0.1.9-beta (dev source)</code></p>
+        <h1>📦 ローカルビルドテスト (dist/)</h1>
+        <p>このページは、<code>npm run build</code> で生成した <code>dist/</code> のビルド済みファイルを直接読み込んで動作確認するページです。</p>
+        <p>使用ファイル: <code>/dist/turntable-viewer.js</code></p>
+        <p>起動方法: <code>npm run preview</code> → <code>http://localhost:4173/tests/test-build.html</code></p>
     </div>
 
     <div class="demo-area">
