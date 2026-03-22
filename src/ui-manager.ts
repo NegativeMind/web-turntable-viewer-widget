@@ -1,70 +1,223 @@
 import type { TurntableConfig, TurntableState } from './types';
-import { ProgressManager } from './progress-manager';
-import { timeToAngle } from './rotation-utils';
+import { timeToAngle } from './utils';
+import {
+    LOADING_STALL_TIMEOUT_MS,
+    LOADING_TOTAL_TIMEOUT_MS,
+    MOBILE_BREAKPOINT_PX,
+} from './constants';
 
 /**
- * UI更新を管理するクラス（角度表示、リロードボタン、Vimeoリンク）
+ * UI全体を管理するクラス
+ * - ローディングオーバーレイ・プログレスバー（旧 ProgressManager）
+ * - 角度表示・リロードボタン・Vimeoリンク（旧 UIManager）
+ *
+ * コンストラクタでコンテナから必要なDOM要素をすべて取得する。
  */
 export class UIManager {
     private container: HTMLElement;
     private iframe: HTMLIFrameElement;
-    private angleEl: HTMLElement | null;
-    private angleDisplay: HTMLElement | null;
-    private reloadButton: HTMLButtonElement;
     private config: TurntableConfig;
     private state: TurntableState;
-    private progressManager: ProgressManager;
-    private onReload: () => Promise<void>;
+
+    // Loading / progress elements
+    private loadingOverlay: HTMLElement;
+    private loadingText: HTMLElement;
+    private progressBar: HTMLProgressElement;
+    private progressText: HTMLElement;
+
+    // Angle display elements
+    private angleEl: HTMLElement | null;
+    private angleDisplay: HTMLElement | null;
+
+    // Reload button
+    private reloadButton: HTMLButtonElement;
+
+    // Loading timeout tracking
+    private loadingStartTime: number | null = null;
+    private lastProgressTime: number = 0;
+    private lastProgressPercentage: number = 0;
 
     constructor(
         container: HTMLElement,
         iframe: HTMLIFrameElement,
-        angleEl: HTMLElement | null,
-        angleDisplay: HTMLElement | null,
         config: TurntableConfig,
         state: TurntableState,
-        progressManager: ProgressManager,
         onReload: () => Promise<void>
     ) {
         this.container = container;
         this.iframe = iframe;
-        this.angleEl = angleEl;
-        this.angleDisplay = angleDisplay;
         this.config = config;
         this.state = state;
-        this.progressManager = progressManager;
-        this.onReload = onReload;
 
+        this.angleEl = container.querySelector('#rotation-angle');
+        this.angleDisplay = container.querySelector('#angle-display');
+
+        const loadingOverlay = container.querySelector<HTMLElement>('.loading-overlay');
+        const loadingText = container.querySelector<HTMLElement>('.loading-text');
+        const progressBar = container.querySelector<HTMLProgressElement>('progress.progress-bar');
+        const progressText = container.querySelector<HTMLElement>('.progress-text');
         const reloadButton = container.querySelector<HTMLButtonElement>('.reload-button');
-        if (!reloadButton) throw new Error('reload-button not found in container');
+
+        if (!loadingOverlay || !loadingText || !progressBar || !progressText || !reloadButton) {
+            throw new Error('Required UI elements not found in container');
+        }
+
+        this.loadingOverlay = loadingOverlay;
+        this.loadingText = loadingText;
+        this.progressBar = progressBar;
+        this.progressText = progressText;
         this.reloadButton = reloadButton;
-        this.reloadButton.addEventListener('click', () => this.onReload());
+
+        this.reloadButton.addEventListener('click', () => onReload());
+    }
+
+    // ─── Loading / Progress ───────────────────────────────────────────────────
+
+    updateProgress(percentage: number, text: string | null = null): void {
+        this.progressBar.value = percentage;
+        this.progressText.textContent = `${Math.round(percentage)}%`;
+
+        if (text) {
+            this.loadingText.textContent = text;
+        }
+
+        if (percentage >= 100) {
+            this.resetTimeout();
+            return;
+        }
+
+        this.checkLoadingTimeout(percentage);
+    }
+
+    showLoadingOverlay(): void {
+        if (this.angleDisplay) {
+            this.angleDisplay.style.display = 'none';
+        }
+
+        this.loadingOverlay.classList.remove('hidden');
+        this.updateProgress(0, 'Initializing video player...');
+        this.adjustLoadingOverlaySize();
+        setTimeout(() => this.adjustLoadingOverlaySize(), 10);
+    }
+
+    hideLoadingOverlay(): void {
+        setTimeout(() => {
+            this.loadingOverlay.classList.add('hidden');
+
+            if (this.config.showAngle && this.angleDisplay) {
+                this.angleDisplay.style.display = 'block';
+            }
+        }, 500);
+
+        this.showVimeoLink();
     }
 
     /**
-     * リロードボタンを表示
+     * リロード後に新しい iframe 参照を更新
      */
-    showReloadButton(): void {
-        this.reloadButton.style.display = 'flex';
+    updateIframe(iframe: HTMLIFrameElement): void {
+        this.iframe = iframe;
     }
 
     /**
-     * リロードボタンを非表示
+     * ローディングオーバーレイのサイズ調整
+     * CSS で position: absolute; width: 100%; height: 100% を使用しているため、
+     * インラインスタイルでの上書きは行わない。
+     * iframe の offsetWidth/offsetHeight が確定済みであれば明示的に合わせる。
+     * 未確定（0）の場合は CSS に委ねてインラインスタイルをクリアする。
      */
-    hideReloadButton(): void {
-        this.reloadButton.style.display = 'none';
+    adjustLoadingOverlaySize(): void {
+        const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+        const isMobile = screenWidth <= MOBILE_BREAKPOINT_PX;
+
+        if (isMobile) {
+            // モバイル: CSS width: 100% !important がiframe幅を上書きするため、
+            // 高さをアスペクト比に合わせて再計算してinlineで設定する
+            const attrWidth = parseInt(this.iframe.getAttribute('width') || '0');
+            const attrHeight = parseInt(this.iframe.getAttribute('height') || '0');
+            const containerWidth = this.container.clientWidth || 0;
+
+            if (containerWidth > 0) {
+                if (attrWidth > 0 && attrHeight > 0) {
+                    const scaledHeight = Math.round(containerWidth * (attrHeight / attrWidth));
+                    this.iframe.style.height = `${scaledHeight}px`;
+                } else {
+                    this.iframe.style.height = `${containerWidth}px`;
+                }
+            }
+
+            this.loadingOverlay.style.width = '';
+            this.loadingOverlay.style.height = '';
+            return;
+        }
+
+        const renderedWidth = this.iframe.offsetWidth;
+        const renderedHeight = this.iframe.offsetHeight;
+
+        if (renderedWidth > 0 && renderedHeight > 0) {
+            this.loadingOverlay.style.width = `${renderedWidth}px`;
+            this.loadingOverlay.style.height = `${renderedHeight}px`;
+        } else {
+            this.loadingOverlay.style.width = '';
+            this.loadingOverlay.style.height = '';
+        }
     }
 
-    /**
-     * リロード処理のローディング状態を設定
-     */
+    resetTimeout(): void {
+        this.loadingStartTime = null;
+        this.lastProgressTime = 0;
+        this.lastProgressPercentage = 0;
+    }
+
+    showError(title: string, message: string): void {
+        this.loadingOverlay.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-text" style="color: #ff6b6b;">${title}</div>
+                    <div style="color: #ffa8a8; font-size: 11px; margin-top: 8px; line-height: 1.4;">
+                        ${message}
+                    </div>
+                </div>
+            `;
+        this.loadingOverlay.style.display = 'flex';
+        this.loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+
+        console.error(`${title}: ${message}`);
+    }
+
+    private checkLoadingTimeout(percentage: number): void {
+        if (!this.loadingStartTime) {
+            this.loadingStartTime = Date.now();
+            this.lastProgressTime = Date.now();
+            this.lastProgressPercentage = percentage;
+            return;
+        }
+
+        const now = Date.now();
+        const totalLoadingTime = now - this.loadingStartTime;
+        const timeSinceLastProgress = now - this.lastProgressTime;
+
+        if (percentage > this.lastProgressPercentage) {
+            this.lastProgressTime = now;
+            this.lastProgressPercentage = percentage;
+            return;
+        }
+
+        if (timeSinceLastProgress > LOADING_STALL_TIMEOUT_MS || totalLoadingTime > LOADING_TOTAL_TIMEOUT_MS) {
+            console.warn(`Loading timeout detected. Stalled: ${timeSinceLastProgress}ms, Total: ${totalLoadingTime}ms`);
+
+            this.loadingText.textContent = 'ローディングが停止しました - リロードボタンを押してください';
+            this.loadingText.style.color = '#ff6b6b';
+
+            this.loadingStartTime = null;
+        }
+    }
+
+    // ─── Angle / Reload / Vimeo link ─────────────────────────────────────────
+
     setReloadLoading(isLoading: boolean): void {
         this.reloadButton.classList.toggle('loading', isLoading);
     }
 
-    /**
-     * 角度表示更新
-     */
     updateAngle(seconds: number): void {
         if (!this.angleEl) return;
 
@@ -77,28 +230,19 @@ export class UIManager {
         }
     }
 
-    /**
-     * 角度表示を表示
-     */
     showAngleDisplay(): void {
         if (this.angleDisplay && this.config.showAngle) {
             this.angleDisplay.style.display = 'block';
         }
     }
 
-    /**
-     * 角度表示を非表示
-     */
     hideAngleDisplay(): void {
         if (this.angleDisplay) {
             this.angleDisplay.style.display = 'none';
         }
     }
 
-    /**
-     * Vimeoリンクを表示
-     */
-    showVimeoLink(): void {
+    private showVimeoLink(): void {
         const vimeoLink = (this.container.parentNode?.querySelector('.vimeo-link') ||
             this.container.querySelector('.vimeo-link')) as HTMLAnchorElement;
         if (vimeoLink) {
@@ -110,20 +254,5 @@ export class UIManager {
             }
             vimeoLink.classList.add('visible');
         }
-    }
-
-    /**
-     * ローディングオーバーレイを隠す（UI調整含む）
-     */
-    hideLoadingOverlay(): void {
-        this.progressManager.hideLoadingOverlay();
-        this.showVimeoLink();
-    }
-
-    /**
-     * エラー表示
-     */
-    showError(title: string, message: string): void {
-        this.progressManager.showError(title, message);
     }
 }

@@ -1,5 +1,4 @@
 import type { TurntableConfig, TurntableState, VimeoPlayer } from './types';
-import { ProgressManager } from './progress-manager';
 import { VideoConfigManager } from './video-config-manager';
 import { PlayerInitializer } from './player-initializer';
 import { DragHandler } from './drag-handler';
@@ -27,8 +26,6 @@ export class TurntableViewer {
     private resizeObserver: ResizeObserver | null = null;
     private resizeDebounceTimer: number | null = null;
 
-    // マネージャークラス
-    private progressManager: ProgressManager;
     private videoConfigManager: VideoConfigManager;
     private playerInitializer: PlayerInitializer;
     private dragHandler: DragHandler | null = null;
@@ -48,23 +45,11 @@ export class TurntableViewer {
         }
         this.iframe = iframe;
 
-        const angleEl = this.container.querySelector<HTMLElement>('#rotation-angle');
-        const angleDisplay = this.container.querySelector<HTMLElement>('#angle-display');
-
         const dragOverlay = this.container.querySelector<HTMLElement>('.drag-overlay');
         if (!dragOverlay) {
             throw new Error('drag-overlay element not found in container');
         }
         this.dragOverlay = dragOverlay;
-
-        const loadingOverlay = this.container.querySelector<HTMLElement>('.loading-overlay');
-        const loadingText = this.container.querySelector<HTMLElement>('.loading-text');
-        const progressBar = this.container.querySelector<HTMLProgressElement>('progress.progress-bar');
-        const progressText = this.container.querySelector<HTMLElement>('.progress-text');
-
-        if (!loadingOverlay || !loadingText || !progressBar || !progressText) {
-            throw new Error('Required loading elements not found in container');
-        }
 
         try {
             this.config = this.getConfig();
@@ -86,28 +71,16 @@ export class TurntableViewer {
             pendingApiCall: null
         };
 
-        this.progressManager = new ProgressManager(
+        this.uiManager = new UIManager(
             this.container,
             this.iframe,
-            loadingOverlay,
-            loadingText,
-            progressBar,
-            progressText,
-            this.config
+            this.config,
+            this.state,
+            this.handleReload.bind(this)
         );
 
         this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
         this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
-        this.uiManager = new UIManager(
-            this.container,
-            this.iframe,
-            angleEl,
-            angleDisplay,
-            this.config,
-            this.state,
-            this.progressManager,
-            this.handleReload.bind(this)
-        );
 
         this.initialize();
     }
@@ -153,7 +126,7 @@ export class TurntableViewer {
      */
     async initialize(): Promise<void> {
         this.uiManager.hideAngleDisplay();
-        this.progressManager.showLoadingOverlay();
+        this.uiManager.showLoadingOverlay();
 
         try {
             await this.initializePlayer();
@@ -161,7 +134,7 @@ export class TurntableViewer {
             this.uiManager.showAngleDisplay();
         } catch (error) {
             console.error('TurntableViewer initialization failed:', error);
-            this.progressManager.updateProgress(100, '初期化エラーが発生しました');
+            this.uiManager.updateProgress(100, '初期化エラーが発生しました');
             this.uiManager.hideLoadingOverlay();
         }
     }
@@ -182,7 +155,7 @@ export class TurntableViewer {
             this.reinitializeManagers();
             await delay(PLAYER_DOM_SETTLE_DELAY_MS);
             this.resetStateForReload();
-            this.progressManager.resetTimeout();
+            this.uiManager.resetTimeout();
             await this.initialize();
         } catch (error) {
             console.error('Reload failed:', error);
@@ -239,9 +212,9 @@ export class TurntableViewer {
         this.iframe = newIframe;
     }
 
-    /** iframe 参照が変わったためマネージャーを再生成 */
+    /** iframe 参照が変わったためマネージャーを再初期化 */
     private reinitializeManagers(): void {
-        this.progressManager.updateIframe(this.iframe);
+        this.uiManager.updateIframe(this.iframe);
         this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
         this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
     }
@@ -278,12 +251,12 @@ export class TurntableViewer {
     /** 動画ソースを設定してiframeを準備 */
     private async setupVideoSource(): Promise<void> {
         await this.videoConfigManager.setInitialSizeFromAPI(
-            (progress, message) => this.progressManager.updateProgress(progress, message),
-            () => this.progressManager.adjustLoadingOverlaySize()
+            (progress, message) => this.uiManager.updateProgress(progress, message),
+            () => this.uiManager.adjustLoadingOverlaySize()
         );
         this.videoConfigManager.setupVideoPlayer();
-        this.progressManager.adjustLoadingOverlaySize();
-        this.progressManager.updateProgress(20, 'Creating player...');
+        this.uiManager.adjustLoadingOverlaySize();
+        this.uiManager.updateProgress(20, 'Creating player...');
 
         if (this.isReloading) {
             await delay(PLAYER_RELOAD_EXTRA_DELAY_MS);
@@ -295,7 +268,7 @@ export class TurntableViewer {
     /** プレイヤーを作成して基本ロードを待機 */
     private async createAndLoadPlayer(): Promise<VimeoPlayer> {
         const player = await this.playerInitializer.createPlayer(
-            (progress, message) => this.progressManager.updateProgress(progress, message)
+            (progress, message) => this.uiManager.updateProgress(progress, message)
         );
 
         if (this.isReloading) {
@@ -312,11 +285,11 @@ export class TurntableViewer {
         this.state.duration = await this.playerInitializer.getPlayerDuration(
             player,
             this.isReloading,
-            (progress, message) => this.progressManager.updateProgress(progress, message)
+            (progress, message) => this.uiManager.updateProgress(progress, message)
         );
         await this.playerInitializer.adjustVideoAspectRatio(
             player,
-            () => this.progressManager.adjustLoadingOverlaySize()
+            () => this.uiManager.adjustLoadingOverlaySize()
         );
         await this.playerInitializer.applyPlayerSettings(player);
         await this.playerInitializer.setInitialPlayerState(player);
@@ -325,7 +298,7 @@ export class TurntableViewer {
     /** 初期化完了後の状態更新とUI処理 */
     private async finalizePlayerSetup(): Promise<void> {
         this.uiManager.updateAngle(0);
-        this.progressManager.updateProgress(95, 'Verifying player...');
+        this.uiManager.updateProgress(95, 'Verifying player...');
 
         // ドラッグの前提となる getCurrentTime() が応答するまで待機してからオーバーレイを隠す
         try {
@@ -335,7 +308,7 @@ export class TurntableViewer {
         }
 
         this.state.isPlayerReady = true;
-        this.progressManager.updateProgress(100, 'Initialization complete!');
+        this.uiManager.updateProgress(100, 'Initialization complete!');
         setTimeout(() => {
             this.uiManager.hideLoadingOverlay();
         }, LOADING_OVERLAY_HIDE_DELAY_MS);
@@ -346,18 +319,18 @@ export class TurntableViewer {
         console.error('Player initialization failed:', error);
         const errorMessage = getErrorMessage(error);
         if (errorMessage.includes('Failed to create Vimeo player')) {
-            this.progressManager.showError('Player Error', 'Failed to create player. Check connection and reload.');
+            this.uiManager.showError('Player Error', 'Failed to create player. Check connection and reload.');
         } else if (errorMessage.includes('Video not found')) {
-            this.progressManager.showError('Video Not Found', 'The specified video was not found. Check the video ID.');
+            this.uiManager.showError('Video Not Found', 'The specified video was not found. Check the video ID.');
         } else if (errorMessage.includes('Access denied')) {
-            this.progressManager.showError('Access Denied', 'This video is private or restricted.');
+            this.uiManager.showError('Access Denied', 'This video is private or restricted.');
         } else if (errorMessage.includes('Failed to get video duration')) {
-            this.progressManager.showError('Failed to Load', 'Could not retrieve video duration. Check network and reload.');
+            this.uiManager.showError('Failed to Load', 'Could not retrieve video duration. Check network and reload.');
         } else {
-            this.progressManager.showError('Initialization Error', `Failed to load video player.<br><br>Error: ${errorMessage}<br><br>Click reload to retry.`);
+            this.uiManager.showError('Initialization Error', `Failed to load video player.<br><br>Error: ${errorMessage}<br><br>Click reload to retry.`);
         }
         this.videoConfigManager.setInitialSizeFallback(() => {
-            this.progressManager.adjustLoadingOverlaySize();
+            this.uiManager.adjustLoadingOverlaySize();
         });
     }
 
@@ -392,7 +365,6 @@ export class TurntableViewer {
      * 初期化中・リロード中・ドラッグ中は無視して並走を防ぐ。
      */
     private async onContainerResize(): Promise<void> {
-        // プレーヤーが未準備（初期化中含む）またはドラッグ中・リロード中は無視
         if (!this.state.isPlayerReady || this.isReloading || this.state.isDragging) return;
 
         const newQuality = this.videoConfigManager.selectVideoQuality();

@@ -81,6 +81,17 @@ export const PLAYER_PRELOAD_DELAY_MS = 300;
 /** 事前バッファリングするシーク位置（動画全体に対する割合） */
 export const PLAYER_PRELOAD_POINTS: readonly number[] = [0.5];
 
+// ─── 慣性スクロール ──────────────────────────────────────────────────────────
+
+/** 慣性の減衰係数（1フレーム=16.67ms あたり）。1に近いほど長く続く */
+export const INERTIA_FRICTION = 0.92;
+
+/** この速度（px/ms）を下回ったら慣性を停止する */
+export const INERTIA_MIN_VELOCITY_PX_MS = 0.05;
+
+/** 速度計算に使うサンプリングウィンドウ（ms） */
+export const INERTIA_VELOCITY_SAMPLE_WINDOW_MS = 80;
+
 // ─── 初期化・リロード遅延 ────────────────────────────────────────────────────
 
 /** iframe に src を設定してからプレーヤー生成までの待機時間（ms） */
