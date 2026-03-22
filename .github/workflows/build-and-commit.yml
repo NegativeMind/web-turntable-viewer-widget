@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # キャッシュなし: npm/vite キャッシュによるビルド差異を防ぐ
 
       - name: Install dependencies
         run: npm ci
@@ -34,21 +34,21 @@ jobs:
       - name: Build widget library
         run: npm run build
 
-      - name: Check if dist changed
-        id: check_changes
-        run: |
-          git sparse-checkout disable || true
-          git add -f dist/
-          if git diff --staged --quiet; then
-            echo "changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "changed=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and push if changed
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: Commit dist if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # .gitignore の dist/ 除外を一時的に無効化してステージングを確実にする
+          sed -i 's|^dist/$||' .gitignore
+
+          git add dist/
+          git checkout -- .gitignore
+
+          if git diff --cached --quiet; then
+            echo "No changes to dist/, skipping commit."
+            exit 0
+          fi
+
           git commit -m "chore: Update build artifacts [skip ci]"
           git push

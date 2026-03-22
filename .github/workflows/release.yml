@@ -14,12 +14,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          # キャッシュなし: 確実に最新ソースからビルドする
 
       - name: Install dependencies
         run: npm ci
@@ -27,13 +30,40 @@ jobs:
       - name: Build widget library
         run: npm run build
 
+      - name: Commit dist/ to main and update tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          TAG_NAME="${GITHUB_REF_NAME}"
+
+          # main ブランチに切り替えて最新を取得
+          git checkout main
+          git pull origin main
+
+          # .gitignore の dist/ 除外を一時的に無効化
+          sed -i 's|^dist/$||' .gitignore
+
+          git add dist/
+          git checkout -- .gitignore
+
+          if git diff --cached --quiet; then
+            echo "dist/ is already up to date on main."
+          else
+            git commit -m "chore: Update build artifacts for ${TAG_NAME} [skip ci]"
+            git push origin main
+          fi
+
+          # タグを最新の main コミット（dist/含む）に移動
+          git tag -f "${TAG_NAME}" -m "Release ${TAG_NAME}"
+          git push origin "${TAG_NAME}" --force
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             dist/turntable-viewer.js
             dist/turntable-viewer.esm.js
-            dist/turntable-viewer.css
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
