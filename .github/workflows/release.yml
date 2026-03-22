@@ -12,52 +12,21 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          ref: main
+          fetch-depth: 1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          # キャッシュなし: 確実に最新ソースからビルドする
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Switch to main branch
-        run: |
-          git sparse-checkout disable || true
-          git checkout main
-          git pull origin main
-
-      - name: Build widget library
-        run: npm run build
-
-      - name: Commit dist/ and update tag
+      - name: Update tag to point to main HEAD
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           TAG_NAME="${GITHUB_REF_NAME}"
 
-          # .gitignore の dist/ 除外を一時的に無効化してステージング
-          # git checkout -- .gitignore はコミット後に実行する（先に戻すとステージがクリアされる）
-          sed -i 's|^dist/$||' .gitignore
-          git add --sparse dist/
-
-          if git diff --cached --quiet; then
-            git checkout -- .gitignore
-            echo "dist/ is already up to date on main."
-          else
-            git commit -m "chore: Update build artifacts for ${TAG_NAME}"
-            git checkout -- .gitignore
-            git push origin main
-          fi
-
-          # タグを dist/ を含む最新コミットに移動
+          # mainのHEADにタグを移動（dist/が正しく含まれているコミットを指すため）
           git tag -f "${TAG_NAME}" -m "Release ${TAG_NAME}"
           git push origin "${TAG_NAME}" --force
 
