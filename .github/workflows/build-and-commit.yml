@@ -36,7 +36,6 @@ jobs:
 
       - name: Commit dist if changed
         run: |
-          git sparse-checkout disable || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -44,7 +43,8 @@ jobs:
           # git checkout -- .gitignore はコミット後に実行する（先に戻すとステージがクリアされる）
           sed -i 's|^dist/$||' .gitignore
 
-          git add dist/
+          # --sparse: sparse-checkout が有効でも dist/ を強制的にインデックスに追加する
+          git add --sparse dist/
 
           if git diff --cached --quiet; then
             git checkout -- .gitignore

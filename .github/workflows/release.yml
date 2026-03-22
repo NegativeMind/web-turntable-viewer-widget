@@ -46,7 +46,7 @@ jobs:
           # .gitignore の dist/ 除外を一時的に無効化してステージング
           # git checkout -- .gitignore はコミット後に実行する（先に戻すとステージがクリアされる）
           sed -i 's|^dist/$||' .gitignore
-          git add dist/
+          git add --sparse dist/
 
           if git diff --cached --quiet; then
             git checkout -- .gitignore
