@@ -115,9 +115,15 @@ export class ProgressManager {
             const attrHeight = parseInt(this.iframe.getAttribute('height') || '0');
             const containerWidth = this.container.clientWidth || 0;
 
-            if (attrWidth > 0 && attrHeight > 0 && containerWidth > 0) {
-                const scaledHeight = Math.round(containerWidth * (attrHeight / attrWidth));
-                this.iframe.style.height = `${scaledHeight}px`;
+            if (containerWidth > 0) {
+                if (attrWidth > 0 && attrHeight > 0) {
+                    // アスペクト比に合わせて比例計算
+                    const scaledHeight = Math.round(containerWidth * (attrHeight / attrWidth));
+                    this.iframe.style.height = `${scaledHeight}px`;
+                } else {
+                    // height属性未設定の初期状態: 1:1をプレースホルダーとして設定
+                    this.iframe.style.height = `${containerWidth}px`;
+                }
             }
 
             // オーバーレイはCSS position: absolute; width/height: 100% に委ねる
