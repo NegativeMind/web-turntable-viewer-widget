@@ -243,6 +243,7 @@ export class TurntableViewer {
 
     /** iframe 参照が変わったためマネージャーを再生成 */
     private reinitializeManagers(): void {
+        this.progressManager.updateIframe(this.iframe);
         this.videoConfigManager = new VideoConfigManager(this.container, this.iframe, this.config);
         this.playerInitializer = new PlayerInitializer(this.container, this.iframe);
     }
@@ -283,6 +284,7 @@ export class TurntableViewer {
             () => this.progressManager.adjustLoadingOverlaySize()
         );
         this.videoConfigManager.setupVideoPlayer();
+        this.progressManager.adjustLoadingOverlaySize();
         this.progressManager.updateProgress(20, 'Creating player...');
 
         if (this.isReloading) {

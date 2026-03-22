@@ -81,13 +81,20 @@ export class ProgressManager {
         setTimeout(() => {
             this.loadingOverlay.classList.add('hidden');
 
-            if (this.config.showAngle) {
+            if (this.config && this.config.showAngle) {
                 const angleDisplay = this.container.querySelector('#angle-display') as HTMLElement;
                 if (angleDisplay) {
                     angleDisplay.style.display = 'block';
                 }
             }
         }, 500);
+    }
+
+    /**
+     * リロード後に新しい iframe 参照を更新
+     */
+    updateIframe(iframe: HTMLIFrameElement): void {
+        this.iframe = iframe;
     }
 
     /**
@@ -98,6 +105,27 @@ export class ProgressManager {
      * 未確定（0）の場合は CSS に委ねてインラインスタイルをクリアする。
      */
     adjustLoadingOverlaySize(): void {
+        const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+        const isMobile = screenWidth <= 768;
+
+        if (isMobile) {
+            // モバイル: CSS width: 100% !important がiframe幅を上書きするため、
+            // 高さをアスペクト比に合わせて再計算してinlineで設定する
+            const attrWidth = parseInt(this.iframe.getAttribute('width') || '0');
+            const attrHeight = parseInt(this.iframe.getAttribute('height') || '0');
+            const containerWidth = this.container.clientWidth || 0;
+
+            if (attrWidth > 0 && attrHeight > 0 && containerWidth > 0) {
+                const scaledHeight = Math.round(containerWidth * (attrHeight / attrWidth));
+                this.iframe.style.height = `${scaledHeight}px`;
+            }
+
+            // オーバーレイはCSS position: absolute; width/height: 100% に委ねる
+            this.loadingOverlay.style.width = '';
+            this.loadingOverlay.style.height = '';
+            return;
+        }
+
         const renderedWidth = this.iframe.offsetWidth;
         const renderedHeight = this.iframe.offsetHeight;
 
@@ -105,7 +133,6 @@ export class ProgressManager {
             this.loadingOverlay.style.width = `${renderedWidth}px`;
             this.loadingOverlay.style.height = `${renderedHeight}px`;
         } else {
-            // レンダリング前は CSS の width: 100%; height: 100% に委ねる
             this.loadingOverlay.style.width = '';
             this.loadingOverlay.style.height = '';
         }

@@ -383,13 +383,8 @@
 
     [vimeo-video-id] iframe {
         display: block;
-        width: 100%;
-        max-width: none;
-        min-width: 100%;
-        height: auto;
-        aspect-ratio: 1 / 1;
+        width: 100% !important;
         box-sizing: border-box;
-        margin: 0 auto;
     }
 
     .loading-overlay {

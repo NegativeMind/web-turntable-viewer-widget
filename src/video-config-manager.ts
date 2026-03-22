@@ -8,7 +8,6 @@ import {
     PPR_MIN,
     PPR_MAX,
     QUALITY_DPR_LIMIT,
-    MOBILE_BREAKPOINT_PX,
     DEFAULT_VIDEO_WIDTH_PX,
     DEFAULT_ASPECT_RATIO,
 } from './constants';
@@ -94,30 +93,6 @@ export class VideoConfigManager {
      */
     buildVideoUrl(): string {
         const quality = this.selectVideoQuality();
-        const { videoWidth, videoHeight, htmlWidth, htmlHeight } = this.getIframeDimensions();
-
-        let finalWidth = videoWidth || htmlWidth || 480;
-        let finalHeight = videoHeight || htmlHeight || finalWidth;
-
-        const screenWidth = window.innerWidth || document.documentElement.clientWidth;
-        if (screenWidth <= MOBILE_BREAKPOINT_PX) {
-            const containerWidth = this.container.clientWidth || this.container.parentElement?.clientWidth || screenWidth;
-            const availableWidth = Math.floor(containerWidth * 0.9);
-            if (availableWidth > 200) {
-                finalWidth = availableWidth;
-                finalHeight = availableWidth;
-            }
-        }
-
-        this.iframe.setAttribute('width', finalWidth.toString());
-        this.iframe.setAttribute('height', finalHeight.toString());
-
-        if (screenWidth <= MOBILE_BREAKPOINT_PX) {
-            this.iframe.style.width = finalWidth + 'px';
-            this.iframe.style.height = finalHeight + 'px';
-            this.iframe.style.maxWidth = 'none';
-            this.iframe.style.display = 'block';
-        }
 
         const params = new URLSearchParams({
             background: '1',
