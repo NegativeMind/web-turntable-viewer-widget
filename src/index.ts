@@ -13,3 +13,4 @@ if (typeof window !== 'undefined') {
     (window as any).TurntableViewer = TurntableViewer;
     (window as any).TurntableViewerElement = TurntableViewerElement;
 }
+
