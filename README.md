@@ -33,7 +33,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.2.4-beta/dist/turntable-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.2.5-beta/dist/turntable-viewer.js"></script>
 
 <turntable-viewer vimeo-video-id="1118303126" width="480"></turntable-viewer>
 ```
