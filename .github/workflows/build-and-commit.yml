@@ -36,6 +36,7 @@ jobs:
 
       - name: Commit dist if changed
         run: |
+          git sparse-checkout disable || true
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
