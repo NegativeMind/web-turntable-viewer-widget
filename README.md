@@ -3,6 +3,7 @@
 > ⚠️ まだバージョン1未満のベータ版です。仕様が予告なく変更される可能性があります。
 
 模型や3DCGモデルを360度回転させたターンテーブル動画をWebブラウザ上でドラッグ操作して自由な角度から鑑賞できるウィジェットスクリプトです。
+ドラッグを離すと慣性がかかり、スムーズに減速しながら停止します。
 Vimeoの動画埋め込みをラップするもので、動画のアップロード・公開にはVimeoを利用します。
 
 <h1 align="center">
@@ -33,7 +34,7 @@ Vimeoの動画埋め込みをラップするもので、動画のアップロー
 
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.2.6-beta/dist/turntable-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.2.7-beta/dist/turntable-viewer.js"></script>
 
 <turntable-viewer vimeo-video-id="1118303126" width="480"></turntable-viewer>
 ```

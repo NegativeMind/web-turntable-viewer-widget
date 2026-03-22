@@ -1,6 +1,6 @@
 {
     "name": "web-turntable-viewer-widget",
-    "version": "0.2.6-beta",
+    "version": "0.2.7-beta",
     "description": "Interactive 360° turntable viewer widget for Vimeo videos",
     "type": "module",
     "main": "./dist/turntable-viewer.js",

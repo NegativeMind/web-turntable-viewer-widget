@@ -5,7 +5,7 @@
 Vimeoの360度ターンテーブル動画をインタラクティブに操作できるWeb Componentウィジェット。
 ユーザーがドラッグすることでフレームごとに回転操作が可能。
 
-- **バージョン:** 0.2.0-beta
+- **バージョン:** 0.2.7-beta
 - **ライセンス:** MIT
 - **配布:** jsDelivr CDN経由（GitHubリリースから自動）
 
@@ -58,15 +58,16 @@ src/
 ├── turntable-viewer.ts         # コアロジック・オーケストレーション
 ├── turntable-viewer.css        # Shadow DOM CSS（インライン注入）
 ├── types.ts                    # TypeScript型定義
-├── utils.ts                    # ユーティリティ関数
-├── progress-manager.ts         # ローディングオーバーレイ管理
-├── ui-manager.ts               # UI状態管理
-├── drag-handler.ts             # ドラッグインタラクション
+├── utils.ts                    # ユーティリティ関数・timeToAngle変換
+├── constants.ts                # アプリ全体の定数
+├── ui-manager.ts               # UI全体管理（ローディング・角度表示・リロードボタン）
+├── drag-handler.ts             # ドラッグ操作・慣性スクロール
 ├── player-initializer.ts       # Vimeoプレーヤー初期化
-└── video-config-manager.ts     # 動画品質・サイズ設定
+└── video-config-manager.ts     # 動画品質・サイズ・URL設定
 
 tests/
 ├── test-local.html             # 開発中テスト（/src/index.ts を直接読み込み）
+├── test-build.html             # ローカルビルドテスト（/dist/ を直接読み込み）
 └── test-cdn.html               # CDN配布バージョンのテスト
 
 embed-generator/
@@ -109,6 +110,16 @@ npm run dev
 | `http://localhost:3000/tests/test-local.html` | ウィジェット動作確認（ソース直読み） |
 | `http://localhost:3000/tests/test-cdn.html` | CDN配布バージョンの確認 |
 | `http://localhost:3000/embed-generator/` | 埋め込みコード生成ツール（デフォルトで開く） |
+
+#### ビルド済みファイルのテスト（dist/ 直接確認）
+
+```bash
+npm run build
+npm run preview
+```
+
+`npm run preview` 起動後に `http://localhost:4173/tests/test-build.html` でアクセスする。
+`/dist/turntable-viewer.js` を直接読み込むため、CDN配信と同等の動作を確認できる。
 
 > **注意:** `npm run dev` だけでは `embed-generator/` が自動で開く。
 > ウィジェットをテストするには手動で `test-local.html` のURLに移動すること。
@@ -179,13 +190,14 @@ git push origin vX.X.X-beta
 ```typescript
 // 常にgetErrorMessage()ユーティリティを使用
 import { getErrorMessage } from './utils';
-progressManager.showError(getErrorMessage(error));
+uiManager.showError('Title', getErrorMessage(error));
 ```
 
-### ドラッグスロットリング
-- 100ms最小間隔でVimeo APIコールをスロットリング
-- `requestAnimationFrame` でスムーズな更新
-- 高速操作中は保留中のAPIコールをキャンセル
+### ドラッグ操作・慣性スクロール
+- ドラッグ中: 100ms最小間隔で Vimeo API コールをスロットリング
+- ドラッグ終了時: 離した瞬間の速度（px/ms）を 80ms ウィンドウのサンプルから算出
+- 慣性: `requestAnimationFrame` ループで `INERTIA_FRICTION^(elapsed/16.67)` の減衰を適用、`INERTIA_MIN_VELOCITY_PX_MS` を下回ったら停止
+- 慣性中に新しいドラッグが始まると慣性を即キャンセル
 
 ### Web Componentの使用例
 ```html
