@@ -9,6 +9,7 @@
 - **Humans should never commit files in `dist/` directly**
 - `dist/` is auto-generated and committed by GitHub Actions after source changes land on `main`
 - The local pre-commit hook unstages `dist/`, and CI uses `git add -f dist/` intentionally
+- If a human accidentally pushes `dist/` changes, the build workflow runs and overwrites them with a fresh CI build
 - Local `npm run build` is for development testing only
 
 ### 2. Architecture

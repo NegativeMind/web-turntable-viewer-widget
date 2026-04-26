@@ -10,6 +10,7 @@ on:
       - 'package-lock.json'
       - 'vite.config.ts'
       - 'tsconfig.json'
+      - 'dist/**'
 
 permissions:
   contents: write
