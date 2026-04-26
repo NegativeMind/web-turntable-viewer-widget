@@ -119,7 +119,7 @@ npm run preview
 ```
 
 `npm run preview` 起動後に `http://localhost:4173/tests/test-build.html` でアクセスする。
-`/dist/turntable-viewer.js` を直接読み込むため、CDN配信と同等の動作を確認できる。
+`/dist/turntable-viewer.esm.js` を直接読み込むため、CDN配信と同等の動作を確認できる。
 
 > **注意:** `npm run dev` だけでは `embed-generator/` が自動で開く。
 > ウィジェットをテストするには手動で `test-local.html` のURLに移動すること。
@@ -173,9 +173,8 @@ git push origin vX.X.X-beta
 
 | ファイル | 用途 |
 |---------|------|
-| `dist/turntable-viewer.js` | UMD形式（CDN・`<script>` タグ向け） |
-| `dist/turntable-viewer.esm.js` | ESモジュール形式（バンドラー向け） |
-| `dist/turntable-viewer.css` | スタイルシート（Shadow DOM外部CSSに使用しない場合） |
+| `dist/turntable-viewer.esm.js` | ESモジュール形式（CDN・バンドラー向け） |
+| `dist/turntable-viewer.umd.cjs` | UMD/CommonJS形式（`require` 向け） |
 
 ## 技術スタック
 
@@ -202,7 +201,7 @@ uiManager.showError('Title', getErrorMessage(error));
 ### Web Componentの使用例
 ```html
 <script src="https://player.vimeo.com/api/player.js"></script>
-<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.9-beta/dist/turntable-viewer.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@v0.1.9-beta/dist/turntable-viewer.esm.js"></script>
 
 <turntable-viewer
   vimeo-video-id="1118303126"

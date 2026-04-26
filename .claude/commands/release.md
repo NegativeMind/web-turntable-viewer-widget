@@ -42,4 +42,4 @@ git push origin vX.X.X-beta
 ```
 
 完了したら GitHub Release の URL と jsDelivr CDN URL を表示します：
-- CDN URL: `https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@vX.X.X-beta/dist/turntable-viewer.js`
+- CDN URL: `https://cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget@vX.X.X-beta/dist/turntable-viewer.esm.js`

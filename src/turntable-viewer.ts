@@ -134,8 +134,6 @@ export class TurntableViewer {
             this.uiManager.showAngleDisplay();
         } catch (error) {
             console.error('TurntableViewer initialization failed:', error);
-            this.uiManager.updateProgress(100, '初期化エラーが発生しました');
-            this.uiManager.hideLoadingOverlay();
         }
     }
 
@@ -150,11 +148,12 @@ export class TurntableViewer {
 
         try {
             this.cleanupDragHandler();
+            this.cleanupResizeObserver();
             await this.destroyCurrentPlayer();
             await this.recreateIframe();
-            this.reinitializeManagers();
             await delay(PLAYER_DOM_SETTLE_DELAY_MS);
             this.resetStateForReload();
+            this.reinitializeManagers();
             this.uiManager.resetTimeout();
             await this.initialize();
         } catch (error) {
@@ -230,7 +229,7 @@ export class TurntableViewer {
             dragStartX: 0,
             lastDragUpdate: 0,
             pendingApiCall: null,
-            lastDisplayedAngle: 0
+            lastDisplayedAngle: null
         });
     }
 
@@ -245,6 +244,7 @@ export class TurntableViewer {
             await this.finalizePlayerSetup();
         } catch (error) {
             this.handlePlayerInitError(error);
+            throw error;
         }
     }
 
@@ -338,6 +338,7 @@ export class TurntableViewer {
      * イベントリスナーの追加
      */
     attachEventListeners(): void {
+        this.cleanupDragHandler();
         this.cleanupResizeObserver();
 
         this.dragHandler = new DragHandler(
@@ -391,9 +392,15 @@ export class TurntableViewer {
      * クリーンアップ
      */
     destroy(): void {
-        if (this.dragHandler) {
-            this.dragHandler.removeEventListeners();
-        }
+        this.cleanupDragHandler();
         this.cleanupResizeObserver();
+
+        if (this.state.player) {
+            const player = this.state.player;
+            this.state.player = null;
+            void player.destroy().catch((error) => {
+                console.warn('Error destroying player:', error);
+            });
+        }
     }
 }

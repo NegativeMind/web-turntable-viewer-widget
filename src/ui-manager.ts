@@ -52,21 +52,16 @@ export class UIManager {
         this.angleEl = container.querySelector('#rotation-angle');
         this.angleDisplay = container.querySelector('#angle-display');
 
-        const loadingOverlay = container.querySelector<HTMLElement>('.loading-overlay');
-        const loadingText = container.querySelector<HTMLElement>('.loading-text');
-        const progressBar = container.querySelector<HTMLProgressElement>('progress.progress-bar');
-        const progressText = container.querySelector<HTMLElement>('.progress-text');
         const reloadButton = container.querySelector<HTMLButtonElement>('.reload-button');
 
-        if (!loadingOverlay || !loadingText || !progressBar || !progressText || !reloadButton) {
+        const loadingOverlay = container.querySelector<HTMLElement>('.loading-overlay');
+        if (!loadingOverlay || !reloadButton) {
             throw new Error('Required UI elements not found in container');
         }
 
         this.loadingOverlay = loadingOverlay;
-        this.loadingText = loadingText;
-        this.progressBar = progressBar;
-        this.progressText = progressText;
         this.reloadButton = reloadButton;
+        this.refreshLoadingElements();
 
         this.reloadButton.addEventListener('click', () => onReload());
     }
@@ -171,6 +166,20 @@ export class UIManager {
         this.loadingStartTime = null;
         this.lastProgressTime = 0;
         this.lastProgressPercentage = 0;
+    }
+
+    private refreshLoadingElements(): void {
+        const loadingText = this.loadingOverlay.querySelector<HTMLElement>('.loading-text');
+        const progressBar = this.loadingOverlay.querySelector<HTMLProgressElement>('progress.progress-bar');
+        const progressText = this.loadingOverlay.querySelector<HTMLElement>('.progress-text');
+
+        if (!loadingText || !progressBar || !progressText) {
+            throw new Error('Required loading elements not found in container');
+        }
+
+        this.loadingText = loadingText;
+        this.progressBar = progressBar;
+        this.progressText = progressText;
     }
 
     showError(title: string, message: string): void {
