@@ -94,7 +94,11 @@ export class UIManager {
             this.angleDisplay.style.display = 'none';
         }
 
+        this.restoreLoadingContent();
         this.loadingOverlay.classList.remove('hidden');
+        this.loadingOverlay.style.display = 'flex';
+        this.loadingOverlay.style.backgroundColor = '';
+        this.loadingText.style.color = '';
         this.updateProgress(0, 'Initializing video player...');
         this.adjustLoadingOverlaySize();
         setTimeout(() => this.adjustLoadingOverlaySize(), 10);
@@ -170,18 +174,61 @@ export class UIManager {
     }
 
     showError(title: string, message: string): void {
-        this.loadingOverlay.innerHTML = `
-                <div class="loading-content">
-                    <div class="loading-text" style="color: #ff6b6b;">${title}</div>
-                    <div style="color: #ffa8a8; font-size: 11px; margin-top: 8px; line-height: 1.4;">
-                        ${message}
-                    </div>
-                </div>
-            `;
+        const loadingContent = document.createElement('div');
+        loadingContent.className = 'loading-content';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'loading-text';
+        titleEl.style.color = '#ff6b6b';
+        titleEl.textContent = title;
+
+        const messageEl = document.createElement('div');
+        messageEl.style.color = '#ffa8a8';
+        messageEl.style.fontSize = '11px';
+        messageEl.style.marginTop = '8px';
+        messageEl.style.lineHeight = '1.4';
+        messageEl.style.whiteSpace = 'pre-line';
+        messageEl.textContent = message.replace(/<br\s*\/?>/gi, '\n');
+
+        loadingContent.append(titleEl, messageEl);
+        this.loadingOverlay.replaceChildren(loadingContent);
         this.loadingOverlay.style.display = 'flex';
         this.loadingOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
 
         console.error(`${title}: ${message}`);
+    }
+
+    private restoreLoadingContent(): void {
+        if (this.progressBar.isConnected && this.loadingText.isConnected && this.progressText.isConnected) {
+            return;
+        }
+
+        const loadingContent = document.createElement('div');
+        loadingContent.className = 'loading-content';
+
+        const loadingText = document.createElement('div');
+        loadingText.className = 'loading-text';
+        loadingText.textContent = 'Loading turntable...';
+
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+
+        const progressBar = document.createElement('progress');
+        progressBar.className = 'progress-bar';
+        progressBar.max = 100;
+        progressBar.value = 0;
+
+        const progressText = document.createElement('div');
+        progressText.className = 'progress-text';
+        progressText.textContent = '0%';
+
+        progressContainer.append(progressBar, progressText);
+        loadingContent.append(loadingText, progressContainer);
+        this.loadingOverlay.replaceChildren(loadingContent);
+
+        this.loadingText = loadingText;
+        this.progressBar = progressBar;
+        this.progressText = progressText;
     }
 
     private checkLoadingTimeout(percentage: number): void {

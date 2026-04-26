@@ -221,7 +221,7 @@ export class TurntableViewer {
 
     /** リロード用に TurntableState を初期値にリセット */
     private resetStateForReload(): void {
-        this.state = {
+        Object.assign(this.state, {
             player: null,
             duration: 0,
             isPlayerReady: false,
@@ -231,7 +231,7 @@ export class TurntableViewer {
             lastDragUpdate: 0,
             pendingApiCall: null,
             lastDisplayedAngle: 0
-        };
+        });
     }
 
     /**
@@ -338,6 +338,8 @@ export class TurntableViewer {
      * イベントリスナーの追加
      */
     attachEventListeners(): void {
+        this.cleanupResizeObserver();
+
         this.dragHandler = new DragHandler(
             this.container,
             this.dragOverlay,
@@ -358,6 +360,15 @@ export class TurntableViewer {
             }, 500);
         });
         this.resizeObserver.observe(this.container);
+    }
+
+    private cleanupResizeObserver(): void {
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
+        if (this.resizeDebounceTimer !== null) {
+            clearTimeout(this.resizeDebounceTimer);
+            this.resizeDebounceTimer = null;
+        }
     }
 
     /**
@@ -383,11 +394,6 @@ export class TurntableViewer {
         if (this.dragHandler) {
             this.dragHandler.removeEventListeners();
         }
-        this.resizeObserver?.disconnect();
-        this.resizeObserver = null;
-        if (this.resizeDebounceTimer !== null) {
-            clearTimeout(this.resizeDebounceTimer);
-            this.resizeDebounceTimer = null;
-        }
+        this.cleanupResizeObserver();
     }
 }

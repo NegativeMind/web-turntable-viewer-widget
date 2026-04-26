@@ -25,23 +25,26 @@ export class TurntableViewerElement extends HTMLElement {
 
     connectedCallback() {
         this.applyMobileHostStyle(window.matchMedia('(max-width: 768px)'));
-        this.mq = window.matchMedia('(max-width: 768px)');
-        this.mqHandler = (e: MediaQueryListEvent) => this.applyMobileHostStyle(e);
-        this.mq.addEventListener('change', this.mqHandler);
-        this.render();
-        this.initializeViewer();
+        if (!this.mq) {
+            this.mq = window.matchMedia('(max-width: 768px)');
+            this.mqHandler = (e: MediaQueryListEvent) => this.applyMobileHostStyle(e);
+            this.mq.addEventListener('change', this.mqHandler);
+        }
+        this.recreateViewer();
     }
 
     disconnectedCallback() {
-        if (this.viewer) {
-            this.viewer.destroy();
-            this.viewer = null;
-        }
+        this.destroyViewer();
         if (this.mq && this.mqHandler) {
             this.mq.removeEventListener('change', this.mqHandler);
             this.mq = null;
             this.mqHandler = null;
         }
+    }
+
+    attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null) {
+        if (oldValue === newValue || !this.isConnected) return;
+        this.recreateViewer();
     }
 
     /**
@@ -61,55 +64,114 @@ export class TurntableViewerElement extends HTMLElement {
     private render() {
         const vimeoVideoId = this.getAttribute('vimeo-video-id');
         const clockwiseRotation = this.getAttribute('clockwise-rotation');
-        const width = this.getAttribute('width') || '480';
-        const height = this.getAttribute('height') || '';
+        const widthAttr = this.getAttribute('width');
+        const heightAttr = this.getAttribute('height');
+        const width = widthAttr || (!heightAttr ? '480' : '');
+        const height = heightAttr || '';
         const showAngle = this.hasAttribute('show-angle');
 
         if (!vimeoVideoId) {
             console.error('vimeo-video-id attribute is required');
+            this.shadowRoot?.replaceChildren();
+            this.shadowContainer = null;
             return;
         }
 
-        // Shadow DOM内にHTMLとCSSを注入
-        if (this.shadowRoot) {
-            // clockwise-rotation属性を正しく伝播（指定時は必ずbool値が必要）
-            let clockwiseAttr = '';
-            if (clockwiseRotation !== null) {
-                clockwiseAttr = `clockwise-rotation="${clockwiseRotation}"`;
-            }
-            // 属性がない場合は何も追加しない（デフォルトで時計回り）
+        if (!this.shadowRoot) return;
 
-            this.shadowRoot.innerHTML = `
-                <style>${styles}</style>
-                <div class="turntable-wrapper">
-                    <div id="turntable-container" vimeo-video-id="${vimeoVideoId}" ${clockwiseAttr} ${showAngle ? 'show-angle' : ''}>
-                        <iframe ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''} frameborder="0" allowfullscreen></iframe>
-                        <div class="drag-overlay">
-                            <button class="reload-button" title="Reload video">
-                                <svg class="reload-icon" viewBox="0 0 24 24">
-                                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                                </svg>
-                            </button>
-                            <div id="angle-display">
-                                <span id="angle"><span id="rotation-angle">0</span><span class="degree-symbol">°</span></span>
-                            </div>
-                        </div>
-                        <div class="loading-overlay">
-                            <div class="loading-content">
-                                <div class="loading-text">Loading turntable...</div>
-                                <div class="progress-container">
-                                    <progress class="progress-bar" max="100" value="0"></progress>
-                                    <div class="progress-text">0%</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <a class="vimeo-link" href="https://vimeo.com/${vimeoVideoId}" target="_blank">View on Vimeo</a>
-                </div>
-            `;
+        const style = document.createElement('style');
+        style.textContent = styles;
 
-            this.shadowContainer = this.shadowRoot.getElementById('turntable-container');
+        const wrapper = document.createElement('div');
+        wrapper.className = 'turntable-wrapper';
+
+        const container = document.createElement('div');
+        container.id = 'turntable-container';
+        container.setAttribute('vimeo-video-id', vimeoVideoId);
+        if (clockwiseRotation !== null) {
+            container.setAttribute('clockwise-rotation', clockwiseRotation);
         }
+        if (showAngle) {
+            container.setAttribute('show-angle', '');
+        }
+
+        const iframe = document.createElement('iframe');
+        if (width) iframe.setAttribute('width', width);
+        if (height) iframe.setAttribute('height', height);
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allowfullscreen', '');
+
+        const dragOverlay = document.createElement('div');
+        dragOverlay.className = 'drag-overlay';
+
+        const reloadButton = document.createElement('button');
+        reloadButton.className = 'reload-button';
+        reloadButton.title = 'Reload video';
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'reload-icon');
+        svg.setAttribute('viewBox', '0 0 24 24');
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2');
+        svg.appendChild(path);
+        reloadButton.appendChild(svg);
+
+        const angleDisplay = document.createElement('div');
+        angleDisplay.id = 'angle-display';
+
+        const angle = document.createElement('span');
+        angle.id = 'angle';
+
+        const rotationAngle = document.createElement('span');
+        rotationAngle.id = 'rotation-angle';
+        rotationAngle.textContent = '0';
+
+        const degreeSymbol = document.createElement('span');
+        degreeSymbol.className = 'degree-symbol';
+        degreeSymbol.textContent = '°';
+
+        angle.append(rotationAngle, degreeSymbol);
+        angleDisplay.appendChild(angle);
+        dragOverlay.append(reloadButton, angleDisplay);
+
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+
+        const loadingContent = document.createElement('div');
+        loadingContent.className = 'loading-content';
+
+        const loadingText = document.createElement('div');
+        loadingText.className = 'loading-text';
+        loadingText.textContent = 'Loading turntable...';
+
+        const progressContainer = document.createElement('div');
+        progressContainer.className = 'progress-container';
+
+        const progressBar = document.createElement('progress');
+        progressBar.className = 'progress-bar';
+        progressBar.max = 100;
+        progressBar.value = 0;
+
+        const progressText = document.createElement('div');
+        progressText.className = 'progress-text';
+        progressText.textContent = '0%';
+
+        progressContainer.append(progressBar, progressText);
+        loadingContent.append(loadingText, progressContainer);
+        loadingOverlay.appendChild(loadingContent);
+        container.append(iframe, dragOverlay, loadingOverlay);
+
+        const vimeoLink = document.createElement('a');
+        vimeoLink.className = 'vimeo-link';
+        vimeoLink.href = `https://vimeo.com/${vimeoVideoId}`;
+        vimeoLink.target = '_blank';
+        vimeoLink.rel = 'noopener noreferrer';
+        vimeoLink.textContent = 'View on Vimeo';
+
+        wrapper.append(container, vimeoLink);
+        this.shadowRoot.replaceChildren(style, wrapper);
+        this.shadowContainer = container;
     }
 
     private initializeViewer() {
@@ -123,6 +185,20 @@ export class TurntableViewerElement extends HTMLElement {
         } catch (error) {
             console.error('Failed to initialize TurntableViewer:', error);
         }
+    }
+
+    private recreateViewer() {
+        this.destroyViewer();
+        this.render();
+        this.initializeViewer();
+    }
+
+    private destroyViewer() {
+        if (this.viewer) {
+            this.viewer.destroy();
+            this.viewer = null;
+        }
+        this.shadowContainer = null;
     }
 }
 
