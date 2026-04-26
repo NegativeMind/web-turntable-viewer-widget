@@ -6,7 +6,10 @@
 import styles from './turntable-viewer.css?inline';
 import { TurntableViewer } from './turntable-viewer';
 
-export class TurntableViewerElement extends HTMLElement {
+const HTMLElementBase: typeof HTMLElement =
+    typeof HTMLElement === 'undefined' ? class { } as typeof HTMLElement : HTMLElement;
+
+export class TurntableViewerElement extends HTMLElementBase {
     private viewer: TurntableViewer | null = null;
     private shadowContainer: HTMLElement | null = null;
     private mq: MediaQueryList | null = null;
@@ -20,7 +23,9 @@ export class TurntableViewerElement extends HTMLElement {
         super();
 
         // Shadow DOMをアタッチ（完全隔離）
-        this.attachShadow({ mode: 'open' });
+        if (typeof HTMLElement !== 'undefined') {
+            this.attachShadow({ mode: 'open' });
+        }
     }
 
     connectedCallback() {
@@ -42,6 +47,14 @@ export class TurntableViewerElement extends HTMLElement {
             this.mq = null;
             this.mqHandler = null;
         }
+    }
+
+    attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null) {
+        if (oldValue === newValue || !this.isConnected) {
+            return;
+        }
+
+        this.reinitializeViewer();
     }
 
     /**
@@ -124,9 +137,18 @@ export class TurntableViewerElement extends HTMLElement {
             console.error('Failed to initialize TurntableViewer:', error);
         }
     }
+
+    private reinitializeViewer() {
+        if (this.viewer) {
+            this.viewer.destroy();
+            this.viewer = null;
+        }
+        this.render();
+        this.initializeViewer();
+    }
 }
 
 // カスタムエレメントを登録
-if (!customElements.get('turntable-viewer')) {
+if (typeof customElements !== 'undefined' && !customElements.get('turntable-viewer')) {
     customElements.define('turntable-viewer', TurntableViewerElement);
 }

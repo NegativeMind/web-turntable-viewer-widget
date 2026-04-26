@@ -134,8 +134,6 @@ export class TurntableViewer {
             this.uiManager.showAngleDisplay();
         } catch (error) {
             console.error('TurntableViewer initialization failed:', error);
-            this.uiManager.updateProgress(100, '初期化エラーが発生しました');
-            this.uiManager.hideLoadingOverlay();
         }
     }
 
@@ -150,11 +148,12 @@ export class TurntableViewer {
 
         try {
             this.cleanupDragHandler();
+            this.cleanupResizeObserver();
             await this.destroyCurrentPlayer();
             await this.recreateIframe();
-            this.reinitializeManagers();
             await delay(PLAYER_DOM_SETTLE_DELAY_MS);
             this.resetStateForReload();
+            this.reinitializeManagers();
             this.uiManager.resetTimeout();
             await this.initialize();
         } catch (error) {
@@ -221,17 +220,15 @@ export class TurntableViewer {
 
     /** リロード用に TurntableState を初期値にリセット */
     private resetStateForReload(): void {
-        this.state = {
-            player: null,
-            duration: 0,
-            isPlayerReady: false,
-            isDragging: false,
-            startTime: 0,
-            dragStartX: 0,
-            lastDragUpdate: 0,
-            pendingApiCall: null,
-            lastDisplayedAngle: 0
-        };
+        this.state.player = null;
+        this.state.duration = 0;
+        this.state.isPlayerReady = false;
+        this.state.isDragging = false;
+        this.state.startTime = 0;
+        this.state.dragStartX = 0;
+        this.state.lastDragUpdate = 0;
+        this.state.pendingApiCall = null;
+        this.state.lastDisplayedAngle = null;
     }
 
     /**
@@ -245,6 +242,7 @@ export class TurntableViewer {
             await this.finalizePlayerSetup();
         } catch (error) {
             this.handlePlayerInitError(error);
+            throw error;
         }
     }
 
@@ -338,6 +336,9 @@ export class TurntableViewer {
      * イベントリスナーの追加
      */
     attachEventListeners(): void {
+        this.cleanupDragHandler();
+        this.cleanupResizeObserver();
+
         this.dragHandler = new DragHandler(
             this.container,
             this.dragOverlay,
@@ -360,6 +361,15 @@ export class TurntableViewer {
         this.resizeObserver.observe(this.container);
     }
 
+    private cleanupResizeObserver(): void {
+        this.resizeObserver?.disconnect();
+        this.resizeObserver = null;
+        if (this.resizeDebounceTimer !== null) {
+            clearTimeout(this.resizeDebounceTimer);
+            this.resizeDebounceTimer = null;
+        }
+    }
+
     /**
      * コンテナリサイズ時の品質切替
      * 初期化中・リロード中・ドラッグ中は無視して並走を防ぐ。
@@ -380,14 +390,15 @@ export class TurntableViewer {
      * クリーンアップ
      */
     destroy(): void {
-        if (this.dragHandler) {
-            this.dragHandler.removeEventListeners();
-        }
-        this.resizeObserver?.disconnect();
-        this.resizeObserver = null;
-        if (this.resizeDebounceTimer !== null) {
-            clearTimeout(this.resizeDebounceTimer);
-            this.resizeDebounceTimer = null;
+        this.cleanupDragHandler();
+        this.cleanupResizeObserver();
+
+        if (this.state.player) {
+            const player = this.state.player;
+            this.state.player = null;
+            void player.destroy().catch((error) => {
+                console.warn('Error destroying player:', error);
+            });
         }
     }
 }

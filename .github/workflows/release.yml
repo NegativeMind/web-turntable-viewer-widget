@@ -12,30 +12,18 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
+      - name: Checkout release tag
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          ref: main
           fetch-depth: 1
-
-      - name: Update tag to point to main HEAD
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          TAG_NAME="${GITHUB_REF_NAME}"
-
-          # mainのHEADにタグを移動（dist/が正しく含まれているコミットを指すため）
-          git tag -f "${TAG_NAME}" -m "Release ${TAG_NAME}"
-          git push origin "${TAG_NAME}" --force
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/turntable-viewer.js
             dist/turntable-viewer.esm.js
+            dist/turntable-viewer.umd.cjs
           generate_release_notes: true
           draft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}

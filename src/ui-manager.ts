@@ -32,6 +32,16 @@ export class UIManager {
     // Reload button
     private reloadButton: HTMLButtonElement;
 
+    private readonly loadingContentHtml = `
+        <div class="loading-content">
+            <div class="loading-text">Loading turntable...</div>
+            <div class="progress-container">
+                <progress class="progress-bar" max="100" value="0"></progress>
+                <div class="progress-text">0%</div>
+            </div>
+        </div>
+    `;
+
     // Loading timeout tracking
     private loadingStartTime: number | null = null;
     private lastProgressTime: number = 0;
@@ -52,21 +62,16 @@ export class UIManager {
         this.angleEl = container.querySelector('#rotation-angle');
         this.angleDisplay = container.querySelector('#angle-display');
 
-        const loadingOverlay = container.querySelector<HTMLElement>('.loading-overlay');
-        const loadingText = container.querySelector<HTMLElement>('.loading-text');
-        const progressBar = container.querySelector<HTMLProgressElement>('progress.progress-bar');
-        const progressText = container.querySelector<HTMLElement>('.progress-text');
         const reloadButton = container.querySelector<HTMLButtonElement>('.reload-button');
 
-        if (!loadingOverlay || !loadingText || !progressBar || !progressText || !reloadButton) {
+        const loadingOverlay = container.querySelector<HTMLElement>('.loading-overlay');
+        if (!loadingOverlay || !reloadButton) {
             throw new Error('Required UI elements not found in container');
         }
 
         this.loadingOverlay = loadingOverlay;
-        this.loadingText = loadingText;
-        this.progressBar = progressBar;
-        this.progressText = progressText;
         this.reloadButton = reloadButton;
+        this.refreshLoadingElements();
 
         this.reloadButton.addEventListener('click', () => onReload());
     }
@@ -94,6 +99,7 @@ export class UIManager {
             this.angleDisplay.style.display = 'none';
         }
 
+        this.restoreLoadingContent();
         this.loadingOverlay.classList.remove('hidden');
         this.updateProgress(0, 'Initializing video player...');
         this.adjustLoadingOverlaySize();
@@ -167,6 +173,31 @@ export class UIManager {
         this.loadingStartTime = null;
         this.lastProgressTime = 0;
         this.lastProgressPercentage = 0;
+    }
+
+    private refreshLoadingElements(): void {
+        const loadingText = this.loadingOverlay.querySelector<HTMLElement>('.loading-text');
+        const progressBar = this.loadingOverlay.querySelector<HTMLProgressElement>('progress.progress-bar');
+        const progressText = this.loadingOverlay.querySelector<HTMLElement>('.progress-text');
+
+        if (!loadingText || !progressBar || !progressText) {
+            throw new Error('Required loading elements not found in container');
+        }
+
+        this.loadingText = loadingText;
+        this.progressBar = progressBar;
+        this.progressText = progressText;
+    }
+
+    private restoreLoadingContent(): void {
+        if (!this.loadingOverlay.querySelector('progress.progress-bar')) {
+            this.loadingOverlay.innerHTML = this.loadingContentHtml;
+            this.refreshLoadingElements();
+        }
+
+        this.loadingOverlay.style.display = '';
+        this.loadingOverlay.style.backgroundColor = '';
+        this.loadingText.style.color = '';
     }
 
     showError(title: string, message: string): void {

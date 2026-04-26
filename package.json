@@ -3,14 +3,13 @@
     "version": "0.2.7-beta",
     "description": "Interactive 360° turntable viewer widget for Vimeo videos",
     "type": "module",
-    "main": "./dist/turntable-viewer.js",
-    "module": "./dist/turntable-viewer.js",
+    "main": "./dist/turntable-viewer.umd.cjs",
+    "module": "./dist/turntable-viewer.esm.js",
     "exports": {
         ".": {
-            "import": "./dist/turntable-viewer.js",
+            "import": "./dist/turntable-viewer.esm.js",
             "require": "./dist/turntable-viewer.umd.cjs"
-        },
-        "./dist/turntable-viewer.css": "./dist/turntable-viewer.css"
+        }
     },
     "files": [
         "dist"
