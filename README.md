@@ -1,5 +1,12 @@
 # [Web Turntable Viewer Widget (Beta)](https://negativemind.com/web-turntable-viewer-widget/)
 
+[![Version](https://img.shields.io/badge/version-0.2.7--beta-blue)](https://github.com/NegativeMind/web-turntable-viewer-widget/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646cff?logo=vite&logoColor=white)](https://vite.dev/)
+[![Vimeo Player](https://img.shields.io/badge/Vimeo-Player%20API-1ab7ea?logo=vimeo&logoColor=white)](https://developer.vimeo.com/player/sdk)
+[![GitHub Pages](https://github.com/NegativeMind/web-turntable-viewer-widget/actions/workflows/deploy.yml/badge.svg)](https://github.com/NegativeMind/web-turntable-viewer-widget/actions/workflows/deploy.yml)
+
 > ⚠️ まだバージョン1未満のベータ版です。仕様が予告なく変更される可能性があります。
 
 模型や3DCGモデルを360度回転させたターンテーブル動画をWebブラウザ上でドラッグ操作して自由な角度から鑑賞できるウィジェットスクリプトです。
