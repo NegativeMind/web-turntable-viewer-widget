@@ -1,6 +1,6 @@
 # [Web Turntable Viewer Widget (Beta)](https://negativemind.com/web-turntable-viewer-widget/)
 
-[![Version](https://img.shields.io/badge/version-0.2.7--beta-blue)](https://github.com/NegativeMind/web-turntable-viewer-widget/releases)
+[![Version](https://img.shields.io/badge/version-0.2.8--beta-blue)](https://github.com/NegativeMind/web-turntable-viewer-widget/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646cff?logo=vite&logoColor=white)](https://vite.dev/)
