@@ -9,6 +9,9 @@ import { TurntableViewer } from './turntable-viewer';
 const HTMLElementBase: typeof HTMLElement =
     typeof HTMLElement === 'undefined' ? class { } as typeof HTMLElement : HTMLElement;
 
+const DEFAULT_WIDTH = '480';
+const MAX_DIMENSION_PX = 10000;
+
 export class TurntableViewerElement extends HTMLElementBase {
     private viewer: TurntableViewer | null = null;
     private shadowContainer: HTMLElement | null = null;
@@ -72,9 +75,9 @@ export class TurntableViewerElement extends HTMLElementBase {
     private render() {
         const vimeoVideoId = this.getAttribute('vimeo-video-id');
         const clockwiseRotation = this.getAttribute('clockwise-rotation');
-        const widthAttr = this.getAttribute('width');
-        const heightAttr = this.getAttribute('height');
-        const width = widthAttr || (!heightAttr ? '480' : '');
+        const widthAttr = this.normalizeDimensionAttribute('width');
+        const heightAttr = this.normalizeDimensionAttribute('height');
+        const width = widthAttr || (!heightAttr ? DEFAULT_WIDTH : '');
         const height = heightAttr || '';
         const showAngle = this.hasAttribute('show-angle');
 
@@ -180,6 +183,27 @@ export class TurntableViewerElement extends HTMLElementBase {
         wrapper.append(container, vimeoLink);
         this.shadowRoot.replaceChildren(style, wrapper);
         this.shadowContainer = container;
+    }
+
+    private normalizeDimensionAttribute(name: 'width' | 'height'): string {
+        const value = this.getAttribute(name);
+        if (value === null || value.trim() === '') {
+            return '';
+        }
+
+        const normalized = value.trim();
+        if (!/^\d+$/.test(normalized)) {
+            console.warn(`Invalid ${name} attribute value: "${value}". Use a positive integer pixel value.`);
+            return '';
+        }
+
+        const numericValue = Number(normalized);
+        if (numericValue <= 0 || numericValue > MAX_DIMENSION_PX) {
+            console.warn(`Invalid ${name} attribute value: "${value}". Use a value between 1 and ${MAX_DIMENSION_PX}.`);
+            return '';
+        }
+
+        return normalized;
     }
 
     private initializeViewer() {

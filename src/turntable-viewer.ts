@@ -132,8 +132,8 @@ export class TurntableViewer {
             await this.initializePlayer();
             this.attachEventListeners();
             this.uiManager.showAngleDisplay();
-        } catch (error) {
-            console.error('TurntableViewer initialization failed:', error);
+        } catch {
+            // initializePlayer() renders the user-facing error state.
         }
     }
 
@@ -318,7 +318,9 @@ export class TurntableViewer {
     private handlePlayerInitError(error: unknown): void {
         console.error('Player initialization failed:', error);
         const errorMessage = getErrorMessage(error);
-        if (errorMessage.includes('Failed to create Vimeo player')) {
+        if (errorMessage.includes('Vimeo Player API script is required')) {
+            this.uiManager.showError('Vimeo API Missing', 'Load https://player.vimeo.com/api/player.js before the widget script.');
+        } else if (errorMessage.includes('Failed to create Vimeo player')) {
             this.uiManager.showError('Player Error', 'Failed to create player. Check connection and reload.');
         } else if (errorMessage.includes('Video not found')) {
             this.uiManager.showError('Video Not Found', 'The specified video was not found. Check the video ID.');

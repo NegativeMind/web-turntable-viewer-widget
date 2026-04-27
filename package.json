@@ -21,7 +21,8 @@
         "build:docs": "cross-env BUILD_MODE=docs vite build && node scripts/move-docs.js",
         "preview": "vite preview",
         "preview:docs": "vite preview --outDir docs",
-        "test": "vite build && vite preview"
+        "test": "npm run build && npm run test:contracts",
+        "test:contracts": "node scripts/verify-contracts.cjs"
     },
     "keywords": [
         "vimeo",

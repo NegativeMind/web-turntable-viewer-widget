@@ -27,8 +27,12 @@ export class PlayerInitializer {
     async createPlayer(onProgress?: (progress: number, message: string) => void): Promise<VimeoPlayer> {
         try {
             onProgress?.(40, 'Connecting to player...');
-            // @ts-ignore - VimeoはグローバルにCDNから読み込まれている
-            return new Vimeo.Player(this.iframe);
+            const VimeoPlayer = (globalThis as any).Vimeo?.Player;
+            if (typeof VimeoPlayer !== 'function') {
+                throw new Error('Vimeo Player API script is required. Load https://player.vimeo.com/api/player.js before the widget.');
+            }
+
+            return new VimeoPlayer(this.iframe);
         } catch (error) {
             throw new Error(`Failed to create Vimeo player: ${getErrorMessage(error)}`);
         }
