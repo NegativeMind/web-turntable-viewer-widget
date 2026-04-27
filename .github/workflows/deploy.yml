@@ -34,19 +34,6 @@ jobs:
       - name: Build embed generator page
         run: npm run build:docs
 
-      - name: Build widget library
-        run: npm run build
-
-      - name: Copy widget build to Pages artifact
-        run: |
-          VERSION="v$(node -p "require('./package.json').version")"
-          mkdir -p ./docs/dist
-          mkdir -p "./docs/${VERSION}/dist"
-          cp ./dist/turntable-viewer.esm.js ./docs/dist/
-          cp ./dist/turntable-viewer.umd.cjs ./docs/dist/
-          cp ./dist/turntable-viewer.esm.js "./docs/${VERSION}/dist/"
-          cp ./dist/turntable-viewer.umd.cjs "./docs/${VERSION}/dist/"
-
       - name: Add .nojekyll to disable Jekyll
         run: touch ./docs/.nojekyll
 
