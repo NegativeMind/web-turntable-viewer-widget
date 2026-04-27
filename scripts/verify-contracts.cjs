@@ -44,7 +44,8 @@ const viteConfig = readText('vite.config.ts');
 assert(viteConfig.includes("if (format === 'es') return 'turntable-viewer.esm.js';"), 'vite ESM output name does not match package.json/README');
 assert(viteConfig.includes("if (format === 'umd') return 'turntable-viewer.umd.cjs';"), 'vite UMD output name does not match package.json');
 
-const publicScriptUrl = 'https://negativemind.com/web-turntable-viewer-widget/dist/turntable-viewer.esm.js';
+const publicScriptUrl = `https://negativemind.com/web-turntable-viewer-widget/v${packageJson.version}/dist/turntable-viewer.esm.js`;
+const latestScriptUrl = 'https://negativemind.com/web-turntable-viewer-widget/dist/turntable-viewer.esm.js';
 const publicFiles = [
     'README.md',
     'embed-generator/script.ts',
@@ -55,6 +56,7 @@ const publicFiles = [
 for (const file of publicFiles) {
     const text = readText(file);
     assert(text.includes(publicScriptUrl), `${file} must reference the GitHub Pages widget URL`);
+    assert(!text.includes(latestScriptUrl), `${file} must use a versioned widget URL instead of latest`);
     assert(!text.includes('cdn.jsdelivr.net/gh/NegativeMind/web-turntable-viewer-widget'), `${file} must not reference GitHub-hosted dist files`);
 }
 
