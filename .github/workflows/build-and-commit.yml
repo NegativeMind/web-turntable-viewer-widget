@@ -1,4 +1,4 @@
-name: Build and Commit Distribution Files
+name: Build Widget
 
 on:
   push:
@@ -10,10 +10,18 @@ on:
       - 'package-lock.json'
       - 'vite.config.ts'
       - 'tsconfig.json'
-      - 'dist/**'
+      - '.github/workflows/build-and-commit.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'tsconfig.json'
+      - '.github/workflows/build-and-commit.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -21,8 +29,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -35,19 +41,3 @@ jobs:
 
       - name: Build widget library
         run: npm run build
-
-      - name: Commit dist if changed
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # dist/ は通常ユーザーのコミットから除外するが、Actions だけは成果物を強制追加する。
-          git add -f --sparse dist/
-
-          if git diff --cached --quiet; then
-            echo "No changes to dist/, skipping commit."
-            exit 0
-          fi
-
-          git commit -m "chore: Update build artifacts [skip ci]"
-          git push
